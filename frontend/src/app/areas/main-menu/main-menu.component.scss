@@ -1,0 +1,11 @@
+@import 'src/assets/scss/colors.scss';
+
+.main-menu-container {
+    background-color: $component-color;
+    height: 100%;
+    padding: 20px;
+
+    .btn {
+        width: 100%;
+    }
+}

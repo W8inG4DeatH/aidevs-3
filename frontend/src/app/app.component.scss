@@ -1,0 +1,120 @@
+@import 'src/assets/scss/colors.scss';
+
+.noselect {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+.full-width {
+    width: 100%;
+}
+
+.aiworks-main-container {
+    font-size: 13px;
+    line-height: 1.2rem;
+    color: $black;
+    height: 100%;
+    overflow: hidden;
+
+    .aiworks-main {
+        height: calc(100% - 60px);
+
+        .main-menu {
+            width: 200px;
+        }
+
+        .aiworks-main-content-container {
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+        }
+    }
+}
+
+.component-container {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid $grey;
+    background-color: $component-color;
+}
+
+.content-container {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid $grey;
+    background-color: $white;
+    margin: 5px;
+
+    &.gray {
+        background-color: $grey-light;
+    }
+}
+
+.content-row-container {
+    padding: 5px 0;
+    border-bottom: 1px solid $grey;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+hr {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.title {
+    font-weight: bolder;
+    margin-bottom: 10px;
+}
+
+.bolder {
+    font-weight: bolder;
+}
+
+.truncate-end {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.truncate-start {
+    display: inline-block;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
+}
+
+select {
+    padding: 5px;
+    cursor: pointer;
+}
+
+textarea {
+    padding: 10px;
+}
+
+textarea[autoheight] {
+    overflow: hidden;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.header-container {
+    height: 60px;
+    min-height: 60px;
+}
+
+.another-element {
+    margin-left: 15px;
+}

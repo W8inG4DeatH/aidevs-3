@@ -1,0 +1,64 @@
+## API keys
+api.keys
+
+# files
+files/sounds
+files/movies
+
+# Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/cache/
+
+# Python
+backend/__pycache__/
+*.py[cod]
+
+# Exclude virtual environments
+venv/
+env/
+
+# Compiled files and cache
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Pytest cache
+pytest_cache/
+__pycache__/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# MyPy cache
+.mypy_cache/
+
+# pylint reports
+pylint-output/
+
+# Cython debug symbols
+cython_debug/

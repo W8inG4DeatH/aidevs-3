@@ -1,0 +1,9 @@
+gtts
+openai
+flask
+flask-cors
+requests
+moviepy
+ffmpeg
+pydub
+GitPython

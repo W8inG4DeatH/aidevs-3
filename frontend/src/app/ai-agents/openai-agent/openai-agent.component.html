@@ -1,0 +1,62 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container" fxLayout="column">
+            <prompts-database (selectPromptEmitter)="selectPrompt($event)"></prompts-database>
+        </div>
+
+        <div class="content-container" fxLayout="column">
+            <div class="content-row-container full-width" fxLayout="row" fxLayoutAlign="end center">
+                <div fxLayout="row" fxLayoutAlign="start center">
+                    <div>Model:</div>
+                    <div>
+                        <select [(ngModel)]="openAiModel">
+                            <option *ngFor="let model of openAiModels" [value]="model">{{ model }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div fxFlex></div>
+                <div class="header-button-container another-element" fxLayout="row" fxLayoutAlign="center center">
+                    <div
+                        *ngIf="!aiProcessing && myAIPrompt"
+                        (click)="sendPrompt()"
+                        class="full-width"
+                        fxLayout="row"
+                        fxLayoutAlign="center"
+                    >
+                        <div class="btn">SEND to AI</div>
+                    </div>
+                    <div *ngIf="aiProcessing" class="full-width bolder" fxLayout="row" fxLayoutAlign="center">
+                        AI Processing ...
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-row-container full-width" fxLayout="column">
+                <div class="bolder">Prompt:</div>
+                <textarea
+                    [(ngModel)]="myAIPrompt"
+                    placeholder="Select your AI prompt from library or enter here"
+                    spellcheck="false"
+                    class="full-width"
+                    rows="5"
+                    autoheight
+                ></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">
+                <div class="bolder">Response:</div>
+                <textarea
+                    [(ngModel)]="aiResponse"
+                    spellcheck="false"
+                    class="full-width"
+                    rows="10"
+                    autoheight
+                ></textarea>
+            </div>
+        </div>
+    </div>
+</div>

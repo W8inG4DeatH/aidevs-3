@@ -1,0 +1,35 @@
+<div class="component-container prompts-database-container" fxLayout="column">
+    <div class="content-row-container full-width" fxLayout="column">
+        <div class="bolder">databases / prompts-database</div>
+        <div>{{ projectDirectoryPath }}</div>
+    </div>
+    <div *ngIf="files.length > 0" fxLayout="column" class="full-width">
+        <div class="files-list-container full-width" fxLayout="column">
+            <div
+                *ngFor="let file of files"
+                (click)="onSelectFile(file)"
+                class="file-container"
+                [ngClass]="{ selected: file === selectedFile }"
+                fxLayout="row"
+            >
+                <div class="truncate-start" fxFlex="50" title="{{ file.FullPath }}">{{ file.Name }}</div>
+                <div class="truncate-end file-content" fxFlex="50" title="{{ file.Content }}">({{ file.Content }}</div>
+                )
+            </div>
+        </div>
+        <div *ngIf="selectedFile" fxLayout="column" class="edition-container">
+            <div class="content-row-container file-container selected bolder" fxLayout="row">
+                <div class="truncate-start" title="{{ selectedFile.FullPath }}">{{ selectedFile.FullPath }}</div>
+            </div>
+            <div *ngIf="editMode" class="prompt-editor-container" fxLayout="row">
+              <textarea [(ngModel)]="selectedFile.Content" spellcheck="false" class="full-width" autoheight></textarea>
+            </div>
+            <div class="content-row-container" fxLayoutAlign="end center" fxLayout="row">
+                <div *ngIf="!editMode" (click)="onEditFile()" class="btn">Edit</div>
+                <div *ngIf="editMode" (click)="onSaveFile()" class="btn">Save</div>
+                <div (click)="onUsePrompt()" class="btn">Select</div>
+            </div>
+        </div>
+    </div>
+    <div *ngIf="files.length === 0" class="content-row-container">No files found.</div>
+</div>

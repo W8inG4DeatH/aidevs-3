@@ -1,0 +1,19 @@
+@import 'src/assets/scss/colors.scss';
+
+$headerHeight: 60px;
+
+.aiworks-main-header-container {
+    background-color: $component-color;
+    height: $headerHeight;
+    padding: 10px 20px;
+
+    .main-logo-container {
+        font-size: bolder;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    user {
+        height: calc($headerHeight - 20px);
+    }
+}

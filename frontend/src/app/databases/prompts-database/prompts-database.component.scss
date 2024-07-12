@@ -1,0 +1,24 @@
+@import 'src/assets/scss/colors.scss';
+
+.prompts-database-container {
+    .files-list-container {
+        border-bottom: 1px solid $grey;
+        padding-top: 5px;
+        .file-container {
+            cursor: pointer;
+
+            &.selected {
+                font-weight: bold;
+            }
+
+            .selector,
+            .file-content {
+                margin-left: 10px;
+            }
+        }
+    }
+    .content-container,
+    .prompt-editor-container {
+        padding-top: 5px;
+    }
+}
