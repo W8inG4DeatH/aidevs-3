@@ -1,19 +1,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
-import { FileChooserComponent } from 'src/app/common-components/file-chooser/file-chooser.component';
 import { UserComponent } from 'src/app/common-components/user/user.component';
-
-import { FileChooserService } from 'src/app/common-components/file-chooser/file-chooser.service';
 
 import { TextareaAutoheightDirective } from 'src/app/directives/textarea-autoheight.directive';
 
 @NgModule({
-    imports: [CommonModule, FormsModule, FlexLayoutModule],
-    declarations: [FileChooserComponent, UserComponent, TextareaAutoheightDirective],
-    exports: [FileChooserComponent, UserComponent, TextareaAutoheightDirective],
-    providers: [FileChooserService],
+    imports: [CommonModule, FlexLayoutModule],
+    declarations: [UserComponent, TextareaAutoheightDirective],
+    exports: [UserComponent, TextareaAutoheightDirective],
 })
 export class CommonComponentsModule {}

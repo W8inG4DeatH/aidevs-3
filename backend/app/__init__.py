@@ -5,9 +5,7 @@ import os
 
 def create_app():
     app = Flask(__name__)
-    CORS(
-        app, resources={r"/api/*": {"origins": "http://localhost:4200"}}
-    )  # Dodano konfigurację CORS
+    CORS(app, resources={r"/api/*": {"origins": "http://localhost:4200"}})
 
     app.config.from_object("app.ai_agents.config.Config")
 

@@ -1,3 +1,4 @@
+pyinstaller
 gtts
 openai
 flask
@@ -6,4 +7,3 @@ requests
 moviepy
 ffmpeg
 pydub
-GitPython

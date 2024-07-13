@@ -55,9 +55,7 @@ def send_prompt():
             text_file_path = Path(texts_folder) / f"{timestamp}.txt"
             os.makedirs(text_file_path.parent, exist_ok=True)
 
-            with open(
-                text_file_path, "w", encoding="utf-8"
-            ) as text_file:  # Dodano encoding="utf-8"
+            with open(text_file_path, "w", encoding="utf-8") as text_file:
                 text_file.write(message_content)
 
             logging.info(f"Response saved to: {text_file_path}")

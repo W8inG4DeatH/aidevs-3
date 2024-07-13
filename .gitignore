@@ -7,8 +7,14 @@ files/movies
 
 # Node.js
 frontend/node_modules/
-frontend/dist/
 frontend/.angular/cache/
+
+# Frontend build
+frontend/dist/
+
+# Backend build
+backend/app/build/
+backend/app/dist/
 
 # Python
 backend/__pycache__/
