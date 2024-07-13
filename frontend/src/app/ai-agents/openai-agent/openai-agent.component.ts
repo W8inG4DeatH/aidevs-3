@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { IAiFile, IOpenAIModel } from 'src/app/common-components/common-components.interfaces';
+import { environment } from 'src/environments/environment';
 
 @Component({
     selector: 'openai-agent',
@@ -14,9 +15,9 @@ export class OpenAiAgentComponent implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT35Turbo0125;
     public myAIPrompt: string = '';
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-    ngOnInit() {}
+    ngOnInit() { }
 
     sendPrompt() {
         if (this.myAIPrompt?.length > 0) {
@@ -26,7 +27,7 @@ export class OpenAiAgentComponent implements OnInit {
                 myAIPrompt: this.myAIPrompt,
             };
 
-            this.http.post('http://127.0.0.1:5000/api/ai_agents/openai_agent/send-prompt', payload).subscribe({
+            this.http.post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, payload).subscribe({
                 next: (response: any) => {
                     this.aiResponse = response.choices[0].message.content;
                     this.aiProcessing = false;
