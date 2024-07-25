@@ -1,7 +1,8 @@
 <div class="main-menu-container" fxLayout="column">
     <div
         *ngFor="let menuElement of mainMenu"
-        routerLink="{{ menuElement.RouterLink }}"
+        [routerLink]="menuElement.RouterLink"
+        routerLinkActive="active-link"
         class="buttons-container"
         fxLayout="column"
     >
