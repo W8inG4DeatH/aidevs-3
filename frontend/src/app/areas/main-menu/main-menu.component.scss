@@ -8,4 +8,10 @@
     .btn {
         width: 100%;
     }
+
+    .active-link {
+        .btn {
+            background-color: $active-color;
+        }
+    }
 }
