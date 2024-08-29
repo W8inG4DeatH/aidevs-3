@@ -5,10 +5,16 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { CommonComponentsModule } from 'src/app/common-components/common-components.module';
 
-import { Lesson00Module } from './lesson-00/lesson-00.module';
-import { Lesson01Module } from './lesson-01/lesson-01.module';
+import { LessonS00E01Module } from './lesson-s00e01/lesson-s00e01.module';
 
 @NgModule({
-    imports: [CommonModule, FormsModule, FlexLayoutModule, CommonComponentsModule, Lesson00Module, Lesson01Module],
+    imports: [
+        CommonModule,
+        FormsModule,
+        FlexLayoutModule,
+        CommonComponentsModule,
+
+        LessonS00E01Module,
+    ],
 })
-export class LessonsModule {}
+export class LessonsModule { }

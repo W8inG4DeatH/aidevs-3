@@ -13,7 +13,6 @@ export interface IAiFile {
 }
 
 export enum IOpenAIModel {
-    GPT35Turbo0125 = 'gpt-3.5-turbo-0125',
-    GPT35Turbo = 'gpt-3.5-turbo',
+    GPT4oMini = 'gpt-4o-mini',
     GPT4o = 'gpt-4o',
 }

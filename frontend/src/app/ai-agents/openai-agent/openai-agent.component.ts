@@ -12,7 +12,7 @@ export class OpenAiAgentComponent implements OnInit {
     public openAiModels = Object.values(IOpenAIModel);
     public aiProcessing: boolean = false;
     public aiResponse: string = 'Tutaj będzie odpowiedź AI.';
-    public openAiModel: IOpenAIModel = IOpenAIModel.GPT35Turbo0125;
+    public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
     public myAIPrompt: string = '';
 
     constructor(private http: HttpClient) { }

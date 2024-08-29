@@ -5,11 +5,11 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 
 import { CommonComponentsModule } from 'src/app/common-components/common-components.module';
 
-import { Lesson01Component } from './lesson-01.component';
+import { LessonS00E01Component } from './lesson-s00e01.component';
 
 @NgModule({
     imports: [CommonModule, FormsModule, FlexLayoutModule, CommonComponentsModule],
-    declarations: [Lesson01Component],
+    declarations: [LessonS00E01Component],
 })
-export class Lesson01Module {}
+export class LessonS00E01Module {}
 
