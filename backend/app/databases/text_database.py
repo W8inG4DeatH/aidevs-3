@@ -1,8 +1,13 @@
 import os
 import logging
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
+from flask_cors import CORS
 
-databases_text_database_bp = Blueprint("text_library", __name__)
+databases_text_database_bp = Blueprint("databases_text_database_bp", __name__)
+CORS(
+    databases_text_database_bp,
+    origins=["http://localhost:4200", "http://127.0.0.1:4200"],
+)
 
 # Login config
 logging.basicConfig(
@@ -36,8 +41,15 @@ def list_files(directory):
         return []
 
 
-@databases_text_database_bp.route("/list", methods=["POST"])
+@databases_text_database_bp.route("/list", methods=["POST", "OPTIONS"])
 def list_text():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+
     data = request.json
     directory = data.get("directory")
     if not directory:
@@ -47,8 +59,15 @@ def list_text():
     return jsonify(files)
 
 
-@databases_text_database_bp.route("/update", methods=["POST"])
+@databases_text_database_bp.route("/update", methods=["POST", "OPTIONS"])
 def update_text():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+
     data = request.json
     filename = data.get("Name")
     content = data.get("Content")
@@ -66,8 +85,15 @@ def update_text():
         return jsonify({"error": "Could not update file"}), 500
 
 
-@databases_text_database_bp.route("/delete", methods=["POST"])
+@databases_text_database_bp.route("/delete", methods=["POST", "OPTIONS"])
 def delete_text():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+        return response
+
     data = request.json
     filename = data.get("Name")
     directory = data.get("directory")

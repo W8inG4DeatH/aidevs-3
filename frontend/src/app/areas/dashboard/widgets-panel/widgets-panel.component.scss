@@ -1,6 +1,12 @@
 .content-container {
     width: 100%;
 
+    .image-container {
+        a {
+            text-align: center;
+        }
+    }
+
     .button {
         cursor: pointer;
     }
@@ -11,7 +17,7 @@
 }
 
 .responsive-img {
-    width: 100%;
+    width: 50%;
     max-width: 100%;
     height: auto;
 }

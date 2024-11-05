@@ -6,6 +6,8 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { CommonComponentsModule } from 'src/app/common-components/common-components.module';
 
 import { LessonS00E01Module } from './lesson-s00e01/lesson-s00e01.module';
+import { LessonS01E01Module } from './lesson-s01e01/lesson-s01e01.module';
+import { LessonS01E02Module } from './lesson-s01e02/lesson-s01e02.module';
 
 @NgModule({
     imports: [
@@ -15,6 +17,8 @@ import { LessonS00E01Module } from './lesson-s00e01/lesson-s00e01.module';
         CommonComponentsModule,
 
         LessonS00E01Module,
+        LessonS01E01Module,
+        LessonS01E02Module,
     ],
 })
 export class LessonsModule { }

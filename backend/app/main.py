@@ -25,6 +25,6 @@ except Exception as e:
 
 if __name__ == "__main__":
     if app:
-        app.run(debug=True)
+        app.run(debug=True, host='localhost')
     else:
         logging.error("App could not be created. Check the configuration.")

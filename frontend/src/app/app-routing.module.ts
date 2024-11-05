@@ -5,11 +5,15 @@ import { WidgetsPanelComponent } from 'src/app/areas/dashboard/widgets-panel/wid
 import { OpenAiAgentComponent } from 'src/app/ai-agents/openai-agent/openai-agent.component';
 
 import { LessonS00E01Component } from 'src/app/lessons/lesson-s00e01/lesson-s00e01.component';
+import { LessonS01E01Component } from 'src/app/lessons/lesson-s01e01/lesson-s01e01.component';
+import { LessonS01E02Component } from 'src/app/lessons/lesson-s01e02/lesson-s01e02.component';
 
 const routes: Routes = [
     { path: '', component: WidgetsPanelComponent },
     { path: 'dashboard', component: WidgetsPanelComponent },
     { path: 'lessons/lesson-s00e01', component: LessonS00E01Component },
+    { path: 'lessons/lesson-s01e01', component: LessonS01E01Component },
+    { path: 'lessons/lesson-s01e02', component: LessonS01E02Component },
     { path: 'ai-agents/openai-agent', component: OpenAiAgentComponent },
 ];
 

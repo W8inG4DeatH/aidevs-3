@@ -4,6 +4,9 @@
     .files-list-container {
         border-bottom: 1px solid $grey;
         padding-top: 5px;
+        overflow-y: auto;
+        max-height: 200px;
+
         .file-container {
             cursor: pointer;
 
