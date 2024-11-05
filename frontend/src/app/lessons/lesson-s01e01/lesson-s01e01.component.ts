@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
+import { IOpenAIModel } from 'src/app/common-components/common-components.interfaces';
 
 @Component({
     selector: 'app-lesson-s01e01',
@@ -8,6 +9,8 @@ import { environment } from 'src/environments/environment';
     styleUrls: ['./lesson-s01e01.component.scss'],
 })
 export class LessonS01E01Component implements OnInit {
+    public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
+
     public pageContent: string = '';
     public question: string = '';
     public aiResponse: string = '';
@@ -32,9 +35,9 @@ export class LessonS01E01Component implements OnInit {
             console.log('Extracted question:', this.question);
 
             // 3. Przygotuj prompt i wyślij do OpenAI
-            const aiPrompt = 'Podaj tylko samą odpowiedź na pytanie: ' + this.question;
+            const aiPrompt = 'Podaj tylko samą odpowiedź na pytanie w postaci liczby: ' + this.question;
             const payload = {
-                openAiModel: 'gpt-3.5-turbo', // Przykładowy model, można dostosować
+                openAiModel: this.openAiModel,
                 myAIPrompt: aiPrompt,
             };
 
