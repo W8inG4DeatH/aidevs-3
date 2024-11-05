@@ -4,16 +4,28 @@
             <div class="content-row-container full-width" fxLayout="column">Lesson s01e01</div>
         </div>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Page content:</div>
+            <div>{{ pageContent }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
             <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
-                <div class="btn">Lesson s01e01</div>
+                <div class="btn">Run Lesson s01e01</div>
             </div>
         </div>
-
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="content-row-container full-width" fxLayout="column">Lesson s01e01</div>
+            <div class="title">Question:</div>
+            <div>{{ question }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">OpenAI Response:</div>
+            <div>{{ aiResponse }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Login Response:</div>
+            <div [innerHTML]="loginResponse.response"></div>
         </div>
     </div>
 </div>

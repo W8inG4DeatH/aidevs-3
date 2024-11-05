@@ -39,17 +39,21 @@ def create_app():
     app.config["SOUNDS_FOLDER"] = os.path.join(base_dir, "files", "sounds")
     app.config["MOVIES_FOLDER"] = os.path.join(base_dir, "files", "movies")
 
-    from app.lessons.lesson_s00e01 import lessons_bp
     from app.databases.text_database import databases_text_database_bp
     from app.ai_agents.openai_agent import ai_agents_openai_agent_bp  # Import blueprint
 
-    app.register_blueprint(lessons_bp, url_prefix="/api/lessons")
     app.register_blueprint(
         databases_text_database_bp, url_prefix="/api/databases/text_database"
     )
     app.register_blueprint(
         ai_agents_openai_agent_bp, url_prefix="/api/ai_agents/openai_agent"
     )  # Register blueprint
+
+    from app.lessons.lesson_s00e01 import lessons_s00e01_bp
+    from app.lessons.lesson_s01e01 import lessons_s01e01_bp
+
+    app.register_blueprint(lessons_s00e01_bp, url_prefix="/api/lessons/s00e01")
+    app.register_blueprint(lessons_s01e01_bp, url_prefix="/api/lessons/s01e01")
 
     @app.route("/serve-file", methods=["GET"])
     def serve_file():
