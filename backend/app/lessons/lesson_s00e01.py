@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 import logging
 import requests
 
-lessons_s00e01_bp = Blueprint("lessons_s00e01_bp", __name__)
+lesson_s00e01_bp = Blueprint("lesson_s00e01_bp", __name__)
 
 
-@lessons_s00e01_bp.route("/s00e01", methods=["POST"])
+@lesson_s00e01_bp.route("/s00e01", methods=["POST"])
 def process_lesson_s00e01():
     try:
         # Log the incoming request

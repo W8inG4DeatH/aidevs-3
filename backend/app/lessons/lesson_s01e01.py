@@ -2,10 +2,10 @@ from flask import Blueprint, request, jsonify
 import logging
 import requests
 
-lessons_s01e01_bp = Blueprint("lessons_s01e01_bp", __name__)
+lesson_s01e01_bp = Blueprint("lesson_s01e01_bp", __name__)
 
 
-@lessons_s01e01_bp.route("/fetch-question", methods=["GET"])
+@lesson_s01e01_bp.route("/fetch-question", methods=["GET"])
 def fetch_question():
     try:
         login_url = "https://xyz.ag3nts.org"
@@ -21,7 +21,7 @@ def fetch_question():
         return jsonify({"error": "Internal server error"}), 500
 
 
-@lessons_s01e01_bp.route("/submit-login", methods=["POST"])
+@lesson_s01e01_bp.route("/submit-login", methods=["POST"])
 def submit_login():
     try:
         # Pobranie danych z żądania
