@@ -1,0 +1,44 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">Lesson s01e03</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Raw Verification Question:</div>
+            <div>{{ verificationQuestionRaw }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Extracted Question:</div>
+            <div>{{ extractedQuestion }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Deceptive Answer (if applicable):</div>
+            <div>{{ deceptiveAnswer }}</div>
+        </div>
+    </div>
+
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">OpenAI Prompt:</div>
+            <div>{{ openAiPrompt }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">OpenAI Response:</div>
+            <div>{{ openAiResponse }}</div>
+        </div>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="title">Verification Result:</div>
+            <div [innerHTML]="verificationResult"></div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
+                <div class="btn">Run Lesson s01e03</div>
+            </div>
+        </div>
+    </div>
+</div>

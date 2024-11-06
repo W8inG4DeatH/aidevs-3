@@ -8,6 +8,7 @@ import { CommonComponentsModule } from 'src/app/common-components/common-compone
 import { LessonS00E01Module } from './lesson-s00e01/lesson-s00e01.module';
 import { LessonS01E01Module } from './lesson-s01e01/lesson-s01e01.module';
 import { LessonS01E02Module } from './lesson-s01e02/lesson-s01e02.module';
+import { LessonS01E03Module } from './lesson-s01e03/lesson-s01e03.module';
 
 @NgModule({
     imports: [
@@ -19,6 +20,7 @@ import { LessonS01E02Module } from './lesson-s01e02/lesson-s01e02.module';
         LessonS00E01Module,
         LessonS01E01Module,
         LessonS01E02Module,
+        LessonS01E03Module,
     ],
 })
 export class LessonsModule { }
