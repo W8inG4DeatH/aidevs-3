@@ -1,68 +1,81 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import logging
 import requests
+import json
 
 lesson_s01e03_bp = Blueprint("lesson_s01e03_bp", __name__)
 
-robot_api_url = "https://xyz.ag3nts.org/verify"
+report_url = "https://centrala.ag3nts.org/report"
 
 
-@lesson_s01e03_bp.route("/start-verification", methods=["POST"])
-def start_verification():
+@lesson_s01e03_bp.route("/download-proxy-file", methods=["GET"])
+def download_proxy_file():
     try:
-        # Wysłanie komendy "READY" do API robota
-        payload = {"text": "READY", "msgID": "0"}
-        response = requests.post(robot_api_url, json=payload)
+        # Fetch the file from the external URL
+        external_file_url = "https://centrala.ag3nts.org/data/5e03d528-a239-488a-83f8-13e443c02c85/json.txt"
+        response = requests.get(external_file_url)
 
+        # Check if the response from the external server is successful
         if response.status_code != 200:
-            logging.error("Error starting verification: %s", response.text)
+            logging.error("Error downloading file from external URL: %s", response.text)
             return (
-                jsonify({"error": "Error starting verification"}),
+                jsonify({"error": "Failed to fetch file from external source"}),
                 response.status_code,
             )
 
+        # Return the content of the external file to the frontend
         return jsonify(response.json()), 200
 
     except Exception as e:
-        logging.error("Exception in start_verification: %s", e)
+        logging.error("Exception in download_proxy_file: %s", e)
         return jsonify({"error": "Internal server error"}), 500
 
 
-@lesson_s01e03_bp.route("/submit-answer", methods=["POST"])
-def submit_answer():
+@lesson_s01e03_bp.route("/submit-corrected-file", methods=["POST"])
+def submit_corrected_file():
     try:
-        # Pobieramy dane z żądania
         data = request.json
-        answer_text = data.get("text")
-        msgID = data.get("msgID")
+        corrected_file = data.get("correctedFile")
+        api_key = data.get("apiKey")
+        task_identifier = data.get("taskIdentifier")
 
-        # Logujemy dane wejściowe od frontendu
-        logging.info(
-            "Received data from frontend: text=%s, msgID=%s", answer_text, msgID
-        )
+        if not corrected_file or not api_key or not task_identifier:
+            return jsonify({"error": "Missing required fields"}), 400
 
-        # Wysyłamy odpowiedź do API robota z zachowaniem msgID
-        payload = {"text": answer_text, "msgID": msgID}
-        logging.info("Sending payload to robot API: %s", payload)
-        response = requests.post(robot_api_url, json=payload)
+        # Parse corrected file to get "test-data" and send it as "answer"
+        corrected_data = json.loads(corrected_file)
 
-        # Logujemy odpowiedź otrzymaną od robota
-        logging.info(
-            "Response from robot API: status_code=%s, response_text=%s",
-            response.status_code,
-            response.text,
-        )
+        # Prepare the payload with the extracted test data
+        payload = {
+            "task": task_identifier,
+            "apikey": api_key,
+            "answer": corrected_data
+        }
 
-        # Jeśli odpowiedź robota wskazuje na błąd, logujemy i zwracamy odpowiedź
+        # Log payload details before sending
+        logging.info("Payload being sent: %s", json.dumps(payload, indent=2))
+
+        response = requests.post(report_url, json=payload)
+
         if response.status_code != 200:
-            logging.error("Error submitting answer: %s", response.text)
-            return jsonify({"error": "Error submitting answer"}), response.status_code
+            logging.error("Error submitting corrected file: %s", response.text)
+            return (
+                jsonify({"error": "Error submitting corrected file"}),
+                response.status_code,
+            )
 
-        # Zwracamy odpowiedź robota do frontendu
-        response_data = response.json()
-        logging.info("Returning response to frontend: %s", response_data)
-        return jsonify(response_data), 200
+        logging.info("Corrected file submitted successfully.")
+
+        return (
+            jsonify(
+                {
+                    "message": "Corrected file submitted successfully.",
+                    "response": response.json(),
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
-        logging.error("Exception in submit_answer: %s", e)
+        logging.error("Exception in submit_corrected_file: %s", e)
         return jsonify({"error": "Internal server error"}), 500

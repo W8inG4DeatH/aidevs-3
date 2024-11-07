@@ -50,6 +50,11 @@
     background-color: $white;
     margin: 5px;
 
+    &.limited {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
     &.gray {
         background-color: $grey-light;
     }

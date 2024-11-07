@@ -12,4 +12,3 @@ import { LessonS01E03Component } from './lesson-s01e03.component';
     declarations: [LessonS01E03Component],
 })
 export class LessonS01E03Module {}
-

@@ -3,32 +3,29 @@
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
             <div class="content-row-container full-width" fxLayout="column">Lesson s01e03</div>
         </div>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="title">Raw Verification Question:</div>
-            <div>{{ verificationQuestionRaw }}</div>
+        <div class="content-container">
+            <div class="title">Process Status:</div>
+            <div>{{ processStatus }}</div>
         </div>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="title">Extracted Question:</div>
-            <div>{{ extractedQuestion }}</div>
-        </div>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="title">Deceptive Answer (if applicable):</div>
-            <div>{{ deceptiveAnswer }}</div>
+
+        <div class="content-container limited">
+            <div class="title">Calibration File Content:</div>
+            <pre>{{ calibrationFileContent | json }}</pre>
         </div>
     </div>
 
-    <div class="section-container" fxLayout="column" fxFlex>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container limited" fxLayout="column" fxLayoutAlign="start start">
             <div class="title">OpenAI Prompt:</div>
             <div>{{ openAiPrompt }}</div>
         </div>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="title">OpenAI Response:</div>
-            <div>{{ openAiResponse }}</div>
+        <div class="content-container limited">
+            <div class="title">Corrected File Content:</div>
+            <pre>{{ correctedFileContent | json }}</pre>
         </div>
-        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="title">Verification Result:</div>
-            <div [innerHTML]="verificationResult"></div>
+        <div class="content-container limited">
+            <div class="title">Report Response:</div>
+            <pre>{{ reportResponse | json }}</pre>
         </div>
     </div>
 </div>
