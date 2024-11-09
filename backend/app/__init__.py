@@ -53,11 +53,13 @@ def create_app():
     from app.lessons.lesson_s01e01 import lesson_s01e01_bp
     from app.lessons.lesson_s01e02 import lesson_s01e02_bp
     from app.lessons.lesson_s01e03 import lesson_s01e03_bp
+    from app.lessons.lesson_s01e05 import lesson_s01e05_bp
 
     app.register_blueprint(lesson_s00e01_bp, url_prefix="/api/lessons/s00e01")
     app.register_blueprint(lesson_s01e01_bp, url_prefix="/api/lessons/s01e01")
     app.register_blueprint(lesson_s01e02_bp, url_prefix="/api/lessons/s01e02")
     app.register_blueprint(lesson_s01e03_bp, url_prefix="/api/lessons/s01e03")
+    app.register_blueprint(lesson_s01e05_bp, url_prefix="/api/lessons/s01e05")
 
     @app.route("/serve-file", methods=["GET"])
     def serve_file():

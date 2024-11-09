@@ -9,7 +9,7 @@ import { IMainMenuElement } from 'src/app/areas/areas.interfaces';
 export class MainMenuComponent implements OnInit {
     public mainMenu: Array<IMainMenuElement> = [];
 
-    constructor() {}
+    constructor() { }
 
     ngOnInit(): void {
         this.InitMainMenu();
@@ -26,16 +26,24 @@ export class MainMenuComponent implements OnInit {
                 RouterLink: '/lessons/lesson-s00e01',
             },
             {
-              DisplayName: 'Lesson s01e01',
-              RouterLink: '/lessons/lesson-s01e01',
+                DisplayName: 'Lesson s01e01',
+                RouterLink: '/lessons/lesson-s01e01',
             },
             {
-              DisplayName: 'Lesson s01e02',
-              RouterLink: '/lessons/lesson-s01e02',
+                DisplayName: 'Lesson s01e02',
+                RouterLink: '/lessons/lesson-s01e02',
             },
             {
-              DisplayName: 'Lesson s01e03',
-              RouterLink: '/lessons/lesson-s01e03',
+                DisplayName: 'Lesson s01e03',
+                RouterLink: '/lessons/lesson-s01e03',
+            },
+            {
+                DisplayName: 'Lesson s01e04',
+                RouterLink: '/lessons/lesson-s01e04',
+            },
+            {
+                DisplayName: 'Lesson s01e05',
+                RouterLink: '/lessons/lesson-s01e05',
             },
             {
                 DisplayName: 'OpenAI Agent',
