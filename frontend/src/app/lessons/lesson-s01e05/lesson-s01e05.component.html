@@ -9,8 +9,8 @@
         </div>
 
         <div class="content-container limited">
-            <div class="title">Calibration File Content:</div>
-            <pre>{{ calibrationFileContent | json }}</pre>
+            <div class="title">Downloaded File Content:</div>
+            <pre>{{ downloadedFileContent }}</pre>
         </div>
     </div>
 
@@ -20,8 +20,8 @@
             <div>{{ openAiPrompt }}</div>
         </div>
         <div class="content-container limited">
-            <div class="title">Corrected File Content:</div>
-            <pre>{{ correctedFileContent | json }}</pre>
+            <div class="title">Processed File Content:</div>
+            <pre>{{ processedFileContent }}</pre>
         </div>
         <div class="content-container limited">
             <div class="title">Report Response:</div>

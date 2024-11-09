@@ -3,22 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { IOpenAIModel } from 'src/app/common-components/common-components.interfaces';
 
-interface TestDataItem {
-    answer: number;
-    question: string;
-    test?: {
-        a: string;
-        q: string;
-    };
-}
-
-interface CalibrationFileContent {
-    apikey: string;
-    copyright: string;
-    description: string;
-    'test-data': TestDataItem[];
-}
-
 @Component({
     selector: 'app-lesson-s01e05',
     templateUrl: './lesson-s01e05.component.html',
@@ -28,92 +12,86 @@ export class LessonS01E05Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
 
     public openAiPrompt: string = '';
-    public calibrationFileContent: CalibrationFileContent | null = null;
-    public correctedFileContent: CalibrationFileContent | null = null;
+    public downloadedFileContent: string = '';
+    public processedFileContent: string = '';
     public reportResponse: any = null;
     public processStatus: string = '';
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'JSON';
+    public taskIdentifier: string = 'CENZURA';
 
     private backendUrl = `${environment.apiUrl}/lessons/s01e05`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-    ngOnInit() {}
+    ngOnInit() { }
 
     async processLesson() {
         try {
             this.processStatus = 'Starting lesson process...';
             console.log(this.processStatus);
 
-            // Krok 1: Pobieranie pliku kalibracyjnego
-            const downloadResponse: CalibrationFileContent | undefined = await this.http
-                .get<CalibrationFileContent>(`${this.backendUrl}/download-proxy-file`)
+            // Krok 1: Pobranie pliku danych
+            const fileUrl = `https://centrala.ag3nts.org/data/${this.apiKey}/cenzura.txt`;
+            console.log('Downloading file from URL:', fileUrl);
+
+            this.processStatus = 'Downloading data file...';
+
+            // Użycie backendu jako proxy dla uniknięcia problemów CORS
+            const downloadResponse: any = await this.http
+                .get(`${this.backendUrl}/download-proxy-file`, { params: { apiKey: this.apiKey } })
                 .toPromise();
-            if (downloadResponse) {
-                this.calibrationFileContent = downloadResponse;
+
+            if (downloadResponse && downloadResponse.content) {
+                this.downloadedFileContent = downloadResponse.content;
+                console.log('Downloaded file content:', this.downloadedFileContent);
             } else {
-                console.error('Failed to download calibration file: response is undefined.');
+                console.error('Failed to download file: response is invalid.');
                 return;
             }
 
-            // Krok 2: Przetwarzanie każdego pytania w `test-data`
-            if (this.calibrationFileContent) {
-                for (const item of this.calibrationFileContent['test-data']) {
-                    const match = item.question.match(/^(\d+)\s*\+\s*(\d+)$/);
+            // Krok 2: Przygotowanie prompta OpenAI
+            this.processStatus = 'Processing data with OpenAI...';
 
-                    // Jeśli question jest równaniem matematycznym (np. "70 + 40"), obliczamy answer lokalnie.
-                    if (match) {
-                        const x = parseInt(match[1], 10);
-                        const y = parseInt(match[2], 10);
-                        const calculatedAnswer = x + y;
+            this.openAiPrompt = `W poniższym tekście zamień wszelkie dane wrażliwe (imię i nazwisko, nazwę ulicy i numer, miasto, wiek osoby) na słowo CENZURA. Zadbaj o każdą kropkę, przecinek, spację itp. Nie wolno Ci przeredagowywać tekstu.
+                Przykład zamiany:
+                Wejście: Informacje o podejrzanym: Marek Jankowski. Mieszka w Białymstoku na ulicy Lipowej 9. Wiek: 26 lat.
+                Wyjście: Informacje o podejrzanym: CENZURA. Mieszka w CENZURA na ulicy CENZURA. Wiek: CENZURA lat.
+                Tekst do zamiany:
+                ${this.downloadedFileContent}`;
 
-                        if (item.answer !== calculatedAnswer) {
-                            item.answer = calculatedAnswer;
-                            console.log(`Updated answer for question "${item.question}":`, item.answer);
-                        }
-                    }
+            const payload = {
+                openAiModel: this.openAiModel,
+                myAIPrompt: this.openAiPrompt,
+            };
 
-                    // Jeśli question nie jest równaniem matematycznym, sprawdzamy czy zawiera `test`.
-                    if (item.test && item.test.q) {
-                        this.openAiPrompt = `Podaj tylko samą odpowiedź na pytanie w języku, w jakim jest pytanie. Pytanie: ${item.test.q}`;
-                        const payload = {
-                            openAiModel: this.openAiModel,
-                            myAIPrompt: this.openAiPrompt,
-                        };
-
-                        // Wysyłanie zapytania do OpenAI dla pytania `test.q`
-                        const aiResponse: any = await this.http
-                            .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, payload)
-                            .toPromise();
-
-                        // Aktualizowanie `a` w obiekcie `test` odpowiedzią AI.
-                        item.test.a = aiResponse.choices[0].message.content.trim();
-                        console.log(`AI updated answer for test question "${item.test.q}":`, item.test.a);
-                    }
-                }
-            }
-
-            // Zaktualizowanie zawartości pliku
-            this.correctedFileContent = this.calibrationFileContent;
-
-            // Dodanie klucza API przed wysłaniem
-            if (this.calibrationFileContent) {
-                this.calibrationFileContent.apikey = this.apiKey;
-            }
-
-            const correctedFileString = JSON.stringify(this.calibrationFileContent);
-            console.log('Prepared corrected file:', correctedFileString);
-
-            // Wysyłanie poprawionego pliku
-            this.reportResponse = await this.http
-                .post(`${this.backendUrl}/submit-corrected-file`, {
-                    correctedFile: correctedFileString,
-                    apiKey: this.apiKey,
-                    taskIdentifier: this.taskIdentifier,
-                })
+            // Wysłanie prompta do OpenAI przez backend
+            const aiResponse: any = await this.http
+                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, payload)
                 .toPromise();
+
+            if (aiResponse && aiResponse.choices && aiResponse.choices.length > 0) {
+                this.processedFileContent = aiResponse.choices[0].message.content.trim();
+                console.log('Processed file content:', this.processedFileContent);
+            } else {
+                console.error('Failed to process data with OpenAI: response is invalid.');
+                return;
+            }
+
+            // Krok 3: Wysłanie przetworzonego pliku do raportu
+            this.processStatus = 'Submitting processed data...';
+
+            const reportPayload = {
+                task: this.taskIdentifier,
+                apikey: this.apiKey,
+                answer: this.processedFileContent,
+            };
+
+            this.reportResponse = await this.http
+                .post(`${this.backendUrl}/submit-processed-file`, reportPayload)
+                .toPromise();
+
             console.log('Report response:', this.reportResponse);
+
             this.processStatus = 'Lesson process completed successfully.';
         } catch (error) {
             console.error('Error in processLesson:', error);
