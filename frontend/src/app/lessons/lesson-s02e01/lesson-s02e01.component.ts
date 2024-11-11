@@ -9,15 +9,24 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
     styleUrls: ['./lesson-s02e01.component.scss'],
 })
 export class LessonS02E01Component implements OnInit {
-    public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
+    public audioFilesNames: string[] = [
+        'adam.m4a',
+        'agnieszka.m4a',
+        'ardian.m4a',
+        'michal.m4a',
+        'monika.m4a',
+        'rafal.m4a',
+    ];
+    public openAiTTSModel: IOpenAIModel = IOpenAIModel.SpeechToText;
+    public openAiModel: IOpenAIModel = IOpenAIModel.O1Preview;
 
+    public transcribedTexts: string[] = [];
     public openAiPrompt: string = '';
-    public downloadedFileContent: string = '';
-    public processedFileContent: string = '';
+    public keyAnswer: string = '';
     public reportResponse: any = null;
     public processStatus: string = '';
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'CENZURA';
+    public taskIdentifier: string = 'mp3';
 
     private backendUrl = `${environment.apiUrl}/lessons/s02e01`;
 
@@ -27,75 +36,85 @@ export class LessonS02E01Component implements OnInit {
 
     async processLesson() {
         try {
-            this.processStatus = 'Starting lesson process...';
+            this.processStatus = 'Rozpoczynanie procesu lekcji...';
             console.log(this.processStatus);
 
-            // Krok 1: Pobranie pliku danych
-            const fileUrl = `https://centrala.ag3nts.org/data/${this.apiKey}/cenzura.txt`;
-            console.log('Downloading file from URL:', fileUrl);
+            // Krok 1: Przesłanie nazw plików audio do backendu
+            this.processStatus = 'Transkrypcja plików audio...';
+            const transcriptionPayload = {
+                audioFilesNames: this.audioFilesNames,
+                model: this.openAiTTSModel,
+            };
 
-            this.processStatus = 'Downloading data file...';
-
-            // Użycie backendu jako proxy dla uniknięcia problemów CORS
-            const downloadResponse: any = await this.http
-                .get(`${this.backendUrl}/download-proxy-file`, { params: { apiKey: this.apiKey } })
+            const transcriptionResponse: any = await this.http
+                .post(`${this.backendUrl}/transcribe-audio-files`, transcriptionPayload)
                 .toPromise();
 
-            if (downloadResponse && downloadResponse.content) {
-                this.downloadedFileContent = downloadResponse.content;
-                console.log('Downloaded file content:', this.downloadedFileContent);
+            if (transcriptionResponse && transcriptionResponse.transcriptions) {
+                this.transcribedTexts = transcriptionResponse.transcriptions;
+                console.log('Transkrypcje:', this.transcribedTexts);
             } else {
-                console.error('Failed to download file: response is invalid.');
+                console.error('Nie udało się transkrybować plików audio.');
                 return;
             }
 
             // Krok 2: Przygotowanie prompta OpenAI
-            this.processStatus = 'Processing data with OpenAI...';
+            this.processStatus = 'Przetwarzanie danych z OpenAI...';
 
-            this.openAiPrompt = `W poniższym tekście zamień wszelkie dane wrażliwe (imię i nazwisko, nazwę ulicy i numer, miasto, wiek osoby) na słowo CENZURA. Zadbaj o każdą kropkę, przecinek, spację itp. Nie wolno Ci przeredagowywać tekstu.
-                Przykład zamiany:
-                Wejście: Informacje o podejrzanym: Marek Jankowski. Mieszka w Białymstoku na ulicy Lipowej 9. Wiek: 26 lat.
-                Wyjście: Informacje o podejrzanym: CENZURA. Mieszka w CENZURA na ulicy CENZURA. Wiek: CENZURA lat.
-                Tekst do zamiany:
-                ${this.downloadedFileContent}`;
+            // Tworzenie combinedText z nazwami plików (bez rozszerzeń) i transkrypcjami
+            const combinedText = this.audioFilesNames.map((fileName, index) => {
+                const nameWithoutExtension = fileName.split('.')[0];  // Usunięcie rozszerzenia
+                return `${nameWithoutExtension}: ${this.transcribedTexts[index]}`;
+            }).join('\n');
 
-            const payload = {
+            const openAiPromptQuestion: string = "Przeanalizuj dokładnie transkrypcje i pomyśl nad nimi. Twoim celem jest dowiedzenie się, na jakiej ulicy znajduje się uczelnia, na której wykłada Andrzej Maj. Pamiętaj, że nazwa ulicy nie pada w treści transkrypcji. Zeznania świadków mogą być sprzeczne, niektórzy z nich mogą się mylić, a inni odpowiadać w dość dziwaczny sposób. Musisz więc użyć swojej ogólnej wiedzy o uczelniach w Polsce, aby uzyskać odpowiedź. W odpowiedzi podaj tylko samą nazwę własną ulicy, na której znajduje się uczelnia, na której wykłada Andrzej Maj. Podaj nazwę ulicy bez znaków interpunkcyjnych.";
+
+            this.openAiPrompt = `${openAiPromptQuestion}:
+                Transkrypcje:
+                ${combinedText}`;
+
+            console.log('this.openAiPrompt:', this.openAiPrompt);
+
+            const aiPayload = {
                 openAiModel: this.openAiModel,
                 myAIPrompt: this.openAiPrompt,
             };
 
-            // Wysłanie prompta do OpenAI przez backend
             const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, payload)
+                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
                 .toPromise();
 
             if (aiResponse && aiResponse.choices && aiResponse.choices.length > 0) {
-                this.processedFileContent = aiResponse.choices[0].message.content.trim();
-                console.log('Processed file content:', this.processedFileContent);
+                this.keyAnswer = aiResponse.choices[0].message.content.trim();
+                console.log('Odpowiedź:', this.keyAnswer);
             } else {
-                console.error('Failed to process data with OpenAI: response is invalid.');
+                console.error('Nie udało się uzyskać odpowiedzi z OpenAI.');
                 return;
             }
 
-            // Krok 3: Wysłanie przetworzonego pliku do raportu
-            this.processStatus = 'Submitting processed data...';
+            // Krok 3: Wysłanie KEY_ANSWER do Centrali
+            this.processStatus = 'Wysyłanie odpowiedzi...';
 
             const reportPayload = {
                 task: this.taskIdentifier,
                 apikey: this.apiKey,
-                answer: this.processedFileContent,
+                answer: this.keyAnswer,
             };
 
-            this.reportResponse = await this.http
-                .post(`${this.backendUrl}/submit-processed-file`, reportPayload)
-                .toPromise();
+            // Bezpośrednie wywołanie endpointu serwisu zewnętrznego z Angulara
+            const reportUrl = 'https://centrala.ag3nts.org/report';
 
-            console.log('Report response:', this.reportResponse);
-
-            this.processStatus = 'Lesson process completed successfully.';
+            try {
+                this.reportResponse = await this.http.post(reportUrl, reportPayload).toPromise();
+                console.log('Odpowiedź raportu:', this.reportResponse);
+                this.processStatus = 'Proces lekcji zakończony pomyślnie.';
+            } catch (error) {
+                console.error('Błąd podczas wysyłania odpowiedzi do Centrali:', error);
+                this.processStatus = 'Nie udało się wysłać odpowiedzi.';
+            }
         } catch (error) {
-            console.error('Error in processLesson:', error);
-            this.processStatus = 'Error occurred during the lesson process.';
+            console.error('Błąd w processLesson:', error);
+            this.processStatus = 'Wystąpił błąd podczas procesu lekcji.';
         }
     }
 }

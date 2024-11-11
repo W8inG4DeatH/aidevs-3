@@ -15,4 +15,6 @@ export interface IAiFile {
 export enum IOpenAIModel {
     GPT4oMini = 'gpt-4o-mini',
     GPT4o = 'gpt-4o',
+    O1Preview = 'o1-preview',
+    SpeechToText = 'whisper-1',
 }
