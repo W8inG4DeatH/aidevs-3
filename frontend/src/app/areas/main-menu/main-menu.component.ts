@@ -9,7 +9,7 @@ import { IMainMenuElement } from 'src/app/areas/areas.interfaces';
 export class MainMenuComponent implements OnInit {
     public mainMenu: Array<IMainMenuElement> = [];
 
-    constructor() { }
+    constructor() {}
 
     ngOnInit(): void {
         this.InitMainMenu();
@@ -48,6 +48,10 @@ export class MainMenuComponent implements OnInit {
             {
                 DisplayName: 'Lesson s02e01',
                 RouterLink: '/lessons/lesson-s02e01',
+            },
+            {
+                DisplayName: 'Lesson s02e02',
+                RouterLink: '/lessons/lesson-s02e02',
             },
             {
                 DisplayName: 'OpenAI Agent',

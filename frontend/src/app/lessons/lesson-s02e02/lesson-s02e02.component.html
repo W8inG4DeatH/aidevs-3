@@ -1,0 +1,35 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">Lesson s02e02</div>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Process Status:</div>
+            <div>{{ processStatus }}</div>
+        </div>
+
+        <div class="content-container">
+          <div class="title">AI Prompt:</div>
+          <div>{{ visionAIPrompt }}</div>
+      </div>
+
+        <div class="content-container">
+            <div class="title">AI Response:</div>
+            <div>{{ aiResponse }}</div>
+        </div>
+
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
+                <div class="btn">Run Lesson s02e02</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container">
+            <div class="title">Map Image:</div>
+            <img [src]="mapImageUrl" alt="Map Image" style="max-width: 50%; height: auto" />
+        </div>
+    </div>
+</div>
