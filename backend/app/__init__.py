@@ -56,6 +56,7 @@ def create_app():
     from app.lessons.lesson_s01e05 import lesson_s01e05_bp
     from app.lessons.lesson_s02e01 import lesson_s02e01_bp
     from app.lessons.lesson_s02e02 import lesson_s02e02_bp
+    from app.lessons.lesson_s02e03 import lesson_s02e03_bp
 
     app.register_blueprint(lesson_s00e01_bp, url_prefix="/api/lessons/s00e01")
     app.register_blueprint(lesson_s01e01_bp, url_prefix="/api/lessons/s01e01")
@@ -64,6 +65,7 @@ def create_app():
     app.register_blueprint(lesson_s01e05_bp, url_prefix="/api/lessons/s01e05")
     app.register_blueprint(lesson_s02e01_bp, url_prefix="/api/lessons/s02e01")
     app.register_blueprint(lesson_s02e02_bp, url_prefix="/api/lessons/s02e02")
+    app.register_blueprint(lesson_s02e03_bp, url_prefix="/api/lessons/s02e03")
 
     @app.route("/serve-file", methods=["GET"])
     def serve_file():
