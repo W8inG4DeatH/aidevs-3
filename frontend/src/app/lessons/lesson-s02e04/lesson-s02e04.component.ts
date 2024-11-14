@@ -13,11 +13,63 @@ export class LessonS02E04Component implements OnInit {
     public openAiTTSModel: IOpenAIModel = IOpenAIModel.SpeechToText;
     public visionAIPrompt: string =
         'Put yourself in the role of a graphologist. Return only the text from the attached image. But without title, form ..., aproved by... i bez godziny na poczaku tekstu głównego. Tylko dalszą część tekstu głównego.';
-    public categorizePrompt: string = `Please assign the content to one of the following categories:
-        - "people", when the content concerns people,
-        - "hardware", when the content concerns hardware,
-        - "no", when the content concerns neither people nor hardware.
-        Response schema: Assigned category: .... [Justification].
+    public categorizePrompt: string = `Your task is to categorize user input into two categories: people and hardware.
+        Pull only data about captured people and fixed hardware issues. Skip the software-related data.
+        If the data doesn't fall into any category, provide N/A. Answer contains only category name.
+        Divide your work into thinking and answering steps like this:
+        <thinking>
+        - the text says something about life form
+        - the life form is not a human
+        - there is no information about hardware in the text
+        - this means that this is N/A
+        </thinking>
+        <answer>N/A</answer>
+        another example:
+        <thinking>
+        - the text mentions Jan Kowalski
+        - there is no information about hardware in the text
+        - this means that this is people category
+        </thinking>
+        <answer>people</answer>
+        another example:
+        <thinking>
+        - the text mentions a bird
+        - the bird is not a human
+        - there is no information about hardware in the text
+        - this means that this is N/A
+        </thinking>
+        <answer>N/A</answer>
+        another example:
+        <thinking>
+        - the text mentions Wojciech Nowak
+        - however, he was not captured or interrogated
+        - there is no information about hardware in the text
+        - this means that this is N/A
+        </thinking>
+        <answer>N/A</answer>
+        another example:
+        <thinking>
+        - the text mentions Zbigniew Kowalski
+        - this name comes from analysis of traces, the person was not captured
+        - the person was not in the place of the incident, only piece of equipment was found
+        - there is no information about hardware in the text
+        - this means that this is N/A
+        </thinking>
+        <answer>N/A</answer>
+        people category contains:
+        - information about captured people
+        - information about people that were interrogated
+        people category does not contain:
+        - general information about someone
+        - person mentioned in the context of the story, but not captured or interrogated
+        - person that is not in the place of the incident
+        - person who planted the hardware
+        hardware category contains:
+        - information about fixed hardware issues
+        hardware category does not contain:
+        - found hardware
+        - hardware that was not fixed
+        - software-related data
         Content:\n`;
 
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
@@ -44,34 +96,6 @@ export class LessonS02E04Component implements OnInit {
             const response: any = await this.http.get(`${this.backendUrl}/get-mixed-files`).toPromise();
             this.mixedFiles = response.files;
             this.processStatus = 'Files fetched successfully.';
-
-            // Init some files, because the model fails at categorization
-            // this.categoriesJson = {
-            //     people: [
-            //         '2024-11-12_report-00-sektor_C4.txt',
-            //         '2024-11-12_report-10-sektor-C1.mp3',
-            //     ], hardware: [
-            //         '2024-11-12_report-11-sektor-C2.mp3',
-            //         '2024-11-12_report-13.png',
-            //         '2024-11-12_report-15.png',
-            //         '2024-11-12_report-17.png',
-            //     ]
-            // };
-            // this.uncategorizedFiles = [
-            //     '2024-11-12_report-01-sektor_A1.txt',
-            //     '2024-11-12_report-02-sektor_A3.txt',
-            //     '2024-11-12_report-03-sektor_A3.txt',
-            //     '2024-11-12_report-04-sektor_B2.txt',
-            //     '2024-11-12_report-05-sektor_C1.txt',
-            //     '2024-11-12_report-06-sektor_C2.txt',
-            //     '2024-11-12_report-07-sektor_C4.txt',
-            //     '2024-11-12_report-08-sektor_A1.txt',
-            //     '2024-11-12_report-09-sektor_C2.txt',
-            //     '2024-11-12_report-11-sektor-C2.mp3',
-            //     '2024-11-12_report-12-sektor_A1.mp3',
-            //     '2024-11-12_report-14.png',
-            //     '2024-11-12_report-16.png',
-            // ];
 
             // Process each file
             for (let fileName of this.mixedFiles) {
@@ -112,11 +136,11 @@ export class LessonS02E04Component implements OnInit {
 
     categorizeFile(responseContent: string, fileName: string) {
         console.log('categorizeFile:', fileName, responseContent);
-        if (responseContent.includes('Assigned category: people')) {
+        if (responseContent.includes('<answer>people</answer>')) {
             this.categoriesJson.people.push(fileName);
-        } else if (responseContent.includes('Assigned category: hardware')) {
+        } else if (responseContent.includes('<answer>hardware</answer>')) {
             this.categoriesJson.hardware.push(fileName);
-        } else if (responseContent.includes('Assigned category: no')) {
+        } else if (responseContent.includes('<answer>N/A</answer>')) {
             this.uncategorizedFiles.push(fileName);
         }
     }
