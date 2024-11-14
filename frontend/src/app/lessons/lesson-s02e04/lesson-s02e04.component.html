@@ -1,0 +1,65 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">Lesson s02e04</div>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Process Status:</div>
+            <div>{{ processStatus }}</div>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Categorize prompt:</div>
+            <div>{{ categorizePrompt }}</div>
+        </div>
+
+        <div class="content-container" *ngIf="processLogs.length > 0">
+            <div class="title">Process Logs:</div>
+            <ul>
+                <li *ngFor="let log of processLogs">{{ log }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container" *ngIf="categoriesJson">
+            <div class="title">Categorized Files:</div>
+
+            <div><strong>People:</strong></div>
+            <ul>
+                <li *ngFor="let file of categoriesJson.people">{{ file }}</li>
+            </ul>
+
+            <div><strong>Hardware:</strong></div>
+            <ul>
+                <li *ngFor="let file of categoriesJson.hardware">{{ file }}</li>
+            </ul>
+
+            <div><strong>Uncategorized:</strong></div>
+            <ul>
+                <li *ngFor="let file of uncategorizedFiles">{{ file }}</li>
+            </ul>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Categorized JSON:</div>
+            <div>{{ categoriesJson | json }}</div>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Response from Headquarters:</div>
+            <div>{{ reportResponse | json }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
+                <div class="btn">Run Lesson s02e04</div>
+            </div>
+        </div>
+    </div>
+</div>

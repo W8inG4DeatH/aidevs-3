@@ -13,6 +13,7 @@ import { LessonS01E05Component } from 'src/app/lessons/lesson-s01e05/lesson-s01e
 import { LessonS02E01Component } from 'src/app/lessons/lesson-s02e01/lesson-s02e01.component';
 import { LessonS02E02Component } from 'src/app/lessons/lesson-s02e02/lesson-s02e02.component';
 import { LessonS02E03Component } from 'src/app/lessons/lesson-s02e03/lesson-s02e03.component';
+import { LessonS02E04Component } from 'src/app/lessons/lesson-s02e04/lesson-s02e04.component';
 
 const routes: Routes = [
     { path: '', component: WidgetsPanelComponent },
@@ -26,6 +27,7 @@ const routes: Routes = [
     { path: 'lessons/lesson-s02e01', component: LessonS02E01Component },
     { path: 'lessons/lesson-s02e02', component: LessonS02E02Component },
     { path: 'lessons/lesson-s02e03', component: LessonS02E03Component },
+    { path: 'lessons/lesson-s02e04', component: LessonS02E04Component },
     { path: 'ai-agents/openai-agent', component: OpenAiAgentComponent },
 ];
 

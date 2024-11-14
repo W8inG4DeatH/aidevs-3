@@ -38,6 +38,7 @@ def create_app():
     app.config["IMAGES_FOLDER"] = os.path.join(base_dir, "files", "images")
     app.config["SOUNDS_FOLDER"] = os.path.join(base_dir, "files", "sounds")
     app.config["MOVIES_FOLDER"] = os.path.join(base_dir, "files", "movies")
+    app.config["MIXED_FOLDER"] = os.path.join(base_dir, "files", "mixed")
 
     from app.databases.text_database import databases_text_database_bp
     from app.ai_agents.openai_agent import ai_agents_openai_agent_bp  # Import blueprint
@@ -57,6 +58,7 @@ def create_app():
     from app.lessons.lesson_s02e01 import lesson_s02e01_bp
     from app.lessons.lesson_s02e02 import lesson_s02e02_bp
     from app.lessons.lesson_s02e03 import lesson_s02e03_bp
+    from app.lessons.lesson_s02e04 import lesson_s02e04_bp
 
     app.register_blueprint(lesson_s00e01_bp, url_prefix="/api/lessons/s00e01")
     app.register_blueprint(lesson_s01e01_bp, url_prefix="/api/lessons/s01e01")
@@ -66,6 +68,7 @@ def create_app():
     app.register_blueprint(lesson_s02e01_bp, url_prefix="/api/lessons/s02e01")
     app.register_blueprint(lesson_s02e02_bp, url_prefix="/api/lessons/s02e02")
     app.register_blueprint(lesson_s02e03_bp, url_prefix="/api/lessons/s02e03")
+    app.register_blueprint(lesson_s02e04_bp, url_prefix="/api/lessons/s02e04")
 
     @app.route("/serve-file", methods=["GET"])
     def serve_file():
