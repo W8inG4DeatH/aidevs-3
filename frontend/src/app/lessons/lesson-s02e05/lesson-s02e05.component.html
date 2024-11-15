@@ -9,35 +9,26 @@
             <div>{{ processStatus }}</div>
         </div>
 
+        <div class="content-container limited">
+            <div class="title">Content Data:</div>
+            <div>{{ contentData }}</div>
+        </div>
+
         <div class="content-container">
-            <div class="title">Categorize prompt:</div>
-            <div>{{ categorizePrompt }}</div>
+            <div class="title">Questions:</div>
+            <div>{{ globalQuestions }}</div>
         </div>
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container" *ngIf="categoriesJson">
-            <div class="title">Categorized Files:</div>
-
-            <div><strong>People:</strong></div>
-            <ul>
-                <li *ngFor="let file of categoriesJson.people">{{ file }}</li>
-            </ul>
-
-            <div><strong>Hardware:</strong></div>
-            <ul>
-                <li *ngFor="let file of categoriesJson.hardware">{{ file }}</li>
-            </ul>
-
-            <div><strong>Uncategorized:</strong></div>
-            <ul>
-                <li *ngFor="let file of uncategorizedFiles">{{ file }}</li>
-            </ul>
+        <div class="content-container limited">
+            <div class="title">Global Prompt:</div>
+            <div>{{ globalPrompt }}</div>
         </div>
 
-        <div class="content-container">
-            <div class="title">Categorized JSON:</div>
-            <div>{{ categoriesJson | json }}</div>
+        <div class="content-container limited">
+            <div class="title">AI Answers JSON:</div>
+            <pre>{{ globalAnswers | json }}</pre>
         </div>
 
         <div class="content-container">
