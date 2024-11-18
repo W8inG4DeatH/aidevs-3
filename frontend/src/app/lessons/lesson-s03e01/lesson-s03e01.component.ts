@@ -10,18 +10,36 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 })
 export class LessonS03E01Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
-    public openAiTTSModel: IOpenAIModel = IOpenAIModel.SpeechToText;
-    public visionAIPrompt: string =
-        'Put yourself in the role of a graphologist. Return only the text from the attached image. But without title, form ..., aproved by... i bez godziny na poczaku tekstu głównego. Tylko dalszą część tekstu głównego.';
-    public categorizePrompt: string = `Your task is to categorize user input into two categories: Content:\n`;
-
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'kategorie';
+    public taskIdentifier: string = 'dokumenty';
 
-    public mixedFiles: string[] = []; // List of files to process
-    public categoriesJson: any = { people: [], hardware: [] };
-    public uncategorizedFiles: string[] = [];
-    public processLogs: string[] = []; // To store logs for display
+    public factsFilesNames: string[] = [];
+    public reportsFilesNames: string[] = [];
+    public factsData: string = '';
+
+    public aiPrompt: string =
+`### Wczuj się w rolę eksperta SEO. Twoim zadaniem jest utworzenie listy najważniejszych słów kluczowych w języku polskim (w mianowniku), które opisują daną treść. Słowa kluczowe nie mogą się powtarzać. Pracuj krok po kroku:
+1. Analiza treści '<main-content>':
+- Stwórz listę 15 słów kluczowych (maksymalnie), które najlepiej opisują treść '<main-content>'.
+- Zapamiętaj tę listę w zmiennej reportFileKeys jako tablicę bez powtarzających się elementów.
+2. Analiza treści elementów '<doc>':
+- Treść '<doc>s' jest podzielona na sekcje słowem '<doc>'.
+- Dla każdej sekcji sprawdź, czy jakakolwiek osoba wymieniona w tej sekcji występuje również w treści '<main-content>'.
+- Jeśli znajdziesz zgodność, wygeneruj listę 10 słów kluczowych dla tej sekcji '<doc>' i dodaj je do tablicy reportFileKeys. Unikaj dodawania powtarzających się słów kluczowych.
+3. Analiza treści elementów '<fact>':
+- Treść '<fact>s' jest podzielona na sekcje słowem '<fact>'.
+- Dla każdej sekcji sprawdź, czy jakakolwiek osoba wymieniona w tej sekcji występuje również w treści '<main-content>'.
+- Jeśli znajdziesz zgodność, wygeneruj listę 10 słów kluczowych dla tej sekcji '<fact>' i dodaj je do tablicy reportFileKeys. Unikaj dodawania powtarzających się słów kluczowych.
+4. Wynik końcowy:
+- Response to tylko zawartość tablicy reportFileKeys w formie:
+klucz, klucz, ..., klucz
+- Wypisz słowa kluczowe w jednej linii, oddzielone przecinkami, bez dodatkowego formatowania.
+### Zasady:
+- Przy wyborze słów kluczowych skupiaj się głównie na: nazwy własne i rzeczowniki.
+- Wszystkie kroki wykonuj w logicznej kolejności.
+\n`;
+
+    public responseJson: any = {};
     public processStatus: string = '';
     public reportResponse: any = '';
 
@@ -34,186 +52,114 @@ export class LessonS03E01Component implements OnInit {
     async processLesson() {
         try {
             this.processStatus = 'Fetching files from server...';
+            console.log('Step 1: Fetching files from server.');
 
             // Fetch the list of files from the backend
             const response: any = await this.http.get(`${this.backendUrl}/get-mixed-files`).toPromise();
-            this.mixedFiles = response.files;
+            const allFiles = response.files;
+            console.log('Files fetched:', allFiles);
             this.processStatus = 'Files fetched successfully.';
 
-            // Process each file
-            for (let fileName of this.mixedFiles) {
-                console.log('Processing file:', fileName);
-                if (
-                    this.categoriesJson.people.includes(fileName) ||
-                    this.categoriesJson.hardware.includes(fileName) ||
-                    this.uncategorizedFiles.includes(fileName)
-                ) {
-                    console.log(`File ${fileName} already categorized, skipping...`);
-                    continue; // Pomijamy przetwarzanie tego pliku, ponieważ jest już sklasyfikowany
-                }
-                // Determine file extension
-                const fileExtension = fileName?.split('.').pop() || '';
+            // Separate files into factsFilesNames and reportsFilesNames
+            this.factsFilesNames = allFiles.filter((fileName: string) => /^f\d{2}\.txt$/.test(fileName));
+            this.reportsFilesNames = allFiles.filter(
+                (fileName: string) => !/^f\d{2}\.txt$/.test(fileName) && fileName.endsWith('.txt'),
+            );
+            console.log('Facts files:', this.factsFilesNames);
+            console.log('Reports files:', this.reportsFilesNames);
 
-                if (fileExtension === 'txt') {
-                    // Process .txt files
-                    await this.processTextFile(fileName);
-                } else if (fileExtension === 'mp3') {
-                    // Process .mp3 files
-                    await this.processAudioFile(fileName);
-                } else if (fileExtension === 'png') {
-                    // Process .png files
-                    await this.processImageFile(fileName);
-                } else {
-                    // Unsupported file type
-                    this.processLogs.push(`Unsupported file type for file: ${fileName}`);
-                }
+            // Read content of factsFilesNames and combine into factsData
+            this.factsData = '';
+            console.log('Step 2: Reading facts files content.');
+
+            for (let fileName of this.factsFilesNames) {
+                const fileContentResponse: any = await this.http
+                    .post(`${this.backendUrl}/get-text-file-content`, { fileName })
+                    .toPromise();
+                const fileContent = fileContentResponse.content;
+                this.factsData += '<fact>' + fileContent + '</fact>\n';
             }
+            console.log('Facts Data:', this.factsData);
 
-            // Step 2: Send the categoriesJson to the central server
-            await this.sendJsonToHeadquarters();
+            // Process report files
+            this.responseJson = {};
+            console.log('Step 3: Processing report files.');
+
+            for (let reportFile of this.reportsFilesNames) {
+                this.processStatus = `Processing report file: ${reportFile}`;
+                console.log(`Processing report file: ${reportFile}`);
+
+                // Get content of reportFile
+                const fileContentResponse: any = await this.http
+                    .post(`${this.backendUrl}/get-text-file-content`, { fileName: reportFile })
+                    .toPromise();
+                const reportContent = '<main-content>' + fileContentResponse.content + '</main-content>\n';
+                console.log(reportContent);
+
+                // Prepare otherDocsData by summing up content of other report files
+                let otherDocsData = '';
+                for (let otherFile of this.reportsFilesNames) {
+                    if (otherFile !== reportFile) {
+                        const otherFileContentResponse: any = await this.http
+                            .post(`${this.backendUrl}/get-text-file-content`, { fileName: otherFile })
+                            .toPromise();
+                        const otherFileContent = '<doc>' + otherFileContentResponse.content + '</doc>\n';
+                        otherDocsData += otherFileContent + '\n';
+                    }
+                }
+                console.log('Docs Data:', otherDocsData);
+
+                // Prepare the prompt
+                const content = `${reportContent}\n${otherDocsData}\n${this.factsData}`;
+                const prompt = `${this.aiPrompt}\n\n${content}`;
+                console.log('Generated prompt for AI:', prompt);
+
+                // Send to AI model
+                const aiPayload = {
+                    openAiModel: this.openAiModel,
+                    myAIPrompt: prompt,
+                };
+                const aiResponse: any = await this.http
+                    .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
+                    .toPromise();
+
+                // Extract the response
+                const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
+                console.log(`AI response for ${reportFile}:`, responseContent);
+
+                // Collect the response in responseJson
+                this.responseJson[reportFile] = responseContent;
+            }
+            console.log('Collected responses:', this.responseJson);
+
+            // Step 4: Send responseJson to Headquarters
+            await this.sendJsonToHeadquarters(this.responseJson);
         } catch (error) {
-            console.error('Error in processLesson:', error);
             this.processStatus = 'Error processing lesson.';
+            console.error(this.processStatus, error);
         }
     }
 
-    categorizeFile(responseContent: string, fileName: string) {
-        console.log('categorizeFile:', fileName, responseContent);
-        if (responseContent.includes('<answer>people</answer>')) {
-            this.categoriesJson.people.push(fileName);
-        } else if (responseContent.includes('<answer>hardware</answer>')) {
-            this.categoriesJson.hardware.push(fileName);
-        } else if (responseContent.includes('<answer>N/A</answer>')) {
-            this.uncategorizedFiles.push(fileName);
-        }
-    }
-
-    async processTextFile(fileName: string) {
+    async sendJsonToHeadquarters(answersJson: any) {
         try {
-            this.processLogs.push(`Processing text file: ${fileName}`);
-
-            // Pobranie treści pliku tekstowego z backendu
-            const fileContentResponse: any = await this.http
-                .post(`${this.backendUrl}/get-text-file-content`, { fileName })
-                .toPromise();
-            const fileContent = fileContentResponse.content;
-            console.log('File content:', fileContent);
-
-            // Przygotowanie prompta
-            const textDetectionPrompt = this.categorizePrompt + fileContent;
-            // Wysłanie do modelu GPT
-            const aiPayload = {
-                openAiModel: this.openAiModel,
-                myAIPrompt: textDetectionPrompt,
-            };
-
-            const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                .toPromise();
-            console.log('aiResponse:', aiResponse?.choices?.[0]?.message?.content);
-
-            // Wydobycie contentu z odpowiedzi, zakładając, że odpowiedź ma strukturę, którą pokazałeś
-            const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
-            this.categorizeFile(responseContent, fileName);
-        } catch (error) {
-            console.error(`Error processing text file ${fileName}:`, error);
-            this.processLogs.push(`Error processing text file: ${fileName}`);
-        }
-    }
-
-    async processAudioFile(fileName: string) {
-        try {
-            this.processLogs.push(`Processing audio file: ${fileName}`);
-
-            // Transcribe the audio file
-            const transcriptionPayload = {
-                audioFileName: fileName,
-                model: this.openAiTTSModel,
-            };
-
-            const transcriptionResponse: any = await this.http
-                .post(`${this.backendUrl}/transcribe-audio-file`, transcriptionPayload)
-                .toPromise();
-
-            const transcription = transcriptionResponse.transcription;
-            console.log('Transcription:', transcription);
-
-            // Przygotowanie prompta
-            const textDetectionPrompt = this.categorizePrompt + transcription;
-            // Wysłanie do modelu GPT
-            const aiPayload = {
-                openAiModel: this.openAiModel,
-                myAIPrompt: textDetectionPrompt,
-            };
-
-            const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                .toPromise();
-            console.log('aiResponse:', aiResponse?.choices?.[0]?.message?.content);
-
-            // Wydobycie contentu z odpowiedzi, zakładając, że odpowiedź ma strukturę, którą pokazałeś
-            const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
-            this.categorizeFile(responseContent, fileName);
-        } catch (error) {
-            console.error(`Error processing audio file ${fileName}:`, error);
-            this.processLogs.push(`Error processing audio file: ${fileName}`);
-        }
-    }
-
-    async processImageFile(fileName: string) {
-        try {
-            this.processLogs.push(`Processing image file: ${fileName}`);
-
-            // Prepare the payload
-            const payload = {
-                imageFileName: fileName,
-                prompt: this.visionAIPrompt,
-                model: this.openAiModel,
-            };
-
-            const visionResponse: any = await this.http.post(`${this.backendUrl}/process-image`, payload).toPromise();
-            console.log('visionResponse:', visionResponse);
-            const analysisResult = visionResponse.result;
-
-            // Przygotowanie prompta
-            const textDetectionPrompt = this.categorizePrompt + analysisResult;
-            // Wysłanie do modelu GPT
-            const aiPayload = {
-                openAiModel: this.openAiModel,
-                myAIPrompt: textDetectionPrompt,
-            };
-
-            const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                .toPromise();
-            console.log('aiResponse:', aiResponse?.choices?.[0]?.message?.content);
-
-            // Wydobycie contentu z odpowiedzi, zakładając, że odpowiedź ma strukturę, którą pokazałeś
-            const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
-            this.categorizeFile(responseContent, fileName);
-        } catch (error) {
-            console.error(`Error processing image file ${fileName}:`, error);
-            this.processLogs.push(`Error processing image file: ${fileName}`);
-        }
-    }
-
-    async sendJsonToHeadquarters() {
-        try {
-            this.processStatus = 'Sending categorized data to Headquarters...';
+            this.processStatus = 'Sending answers to Headquarters...';
+            console.log(this.processStatus);
 
             const reportPayload = {
                 task: this.taskIdentifier,
                 apikey: this.apiKey,
-                answer: this.categoriesJson,
+                answer: answersJson,
             };
+
             const reportUrl = 'https://centrala.ag3nts.org/report';
 
             this.reportResponse = await this.http.post(reportUrl, reportPayload).toPromise();
-            console.log('Report response:', this.reportResponse);
             this.processStatus = 'Lesson process completed successfully.';
+            console.log(this.processStatus);
+            console.log('Report response:', this.reportResponse);
         } catch (error) {
-            console.error('Error sending data to Headquarters:', error);
             this.processStatus = 'Failed to send data to Headquarters.';
+            console.error(this.processStatus, error);
         }
     }
 }

@@ -10,39 +10,34 @@
         </div>
 
         <div class="content-container">
-            <div class="title">Categorize prompt by Paweł Dulak (dulare):</div>
-            <div>{{ categorizePrompt }}</div>
+            <div class="title">AI Prompt:</div>
+            <div>{{ aiPrompt }}</div>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Facts Files Names:</div>
+            <ul>
+                <li *ngFor="let file of factsFilesNames">{{ file }}</li>
+            </ul>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Reports Files Names:</div>
+            <ul>
+                <li *ngFor="let file of reportsFilesNames">{{ file }}</li>
+            </ul>
         </div>
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container" *ngIf="categoriesJson">
-            <div class="title">Categorized Files:</div>
-
-            <div><strong>People:</strong></div>
-            <ul>
-                <li *ngFor="let file of categoriesJson.people">{{ file }}</li>
-            </ul>
-
-            <div><strong>Hardware:</strong></div>
-            <ul>
-                <li *ngFor="let file of categoriesJson.hardware">{{ file }}</li>
-            </ul>
-
-            <div><strong>Uncategorized:</strong></div>
-            <ul>
-                <li *ngFor="let file of uncategorizedFiles">{{ file }}</li>
-            </ul>
-        </div>
-
-        <div class="content-container">
-            <div class="title">Categorized JSON:</div>
-            <div>{{ categoriesJson | json }}</div>
+        <div class="content-container" *ngIf="responseJson">
+            <div class="title">Response JSON:</div>
+            <pre class="wrapped-json">{{ responseJson | json }}</pre>
         </div>
 
         <div class="content-container">
             <div class="title">Response from Headquarters:</div>
-            <div>{{ reportResponse | json }}</div>
+            <div class="wrapped-json">{{ reportResponse | json }}</div>
         </div>
     </div>
 </div>
