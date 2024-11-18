@@ -15,10 +15,12 @@ import { LessonS02E02Component } from 'src/app/lessons/lesson-s02e02/lesson-s02e
 import { LessonS02E03Component } from 'src/app/lessons/lesson-s02e03/lesson-s02e03.component';
 import { LessonS02E04Component } from 'src/app/lessons/lesson-s02e04/lesson-s02e04.component';
 import { LessonS02E05Component } from 'src/app/lessons/lesson-s02e05/lesson-s02e05.component';
+import { LessonS03E01Component } from 'src/app/lessons/lesson-s03e01/lesson-s03e01.component';
 
 const routes: Routes = [
     { path: '', component: WidgetsPanelComponent },
     { path: 'dashboard', component: WidgetsPanelComponent },
+    { path: 'ai-agents/openai-agent', component: OpenAiAgentComponent },
     { path: 'lessons/lesson-s00e01', component: LessonS00E01Component },
     { path: 'lessons/lesson-s01e01', component: LessonS01E01Component },
     { path: 'lessons/lesson-s01e02', component: LessonS01E02Component },
@@ -30,7 +32,7 @@ const routes: Routes = [
     { path: 'lessons/lesson-s02e03', component: LessonS02E03Component },
     { path: 'lessons/lesson-s02e04', component: LessonS02E04Component },
     { path: 'lessons/lesson-s02e05', component: LessonS02E05Component },
-    { path: 'ai-agents/openai-agent', component: OpenAiAgentComponent },
+    { path: 'lessons/lesson-s03e01', component: LessonS02E05Component },
 ];
 
 @NgModule({
