@@ -1,0 +1,1 @@
+sektor A1, monitoring, obszar, patrol, ruch, cisza, czujniki, aktywność, obserwacja, wytyczne

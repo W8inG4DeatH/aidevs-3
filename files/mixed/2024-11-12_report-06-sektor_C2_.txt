@@ -1,0 +1,1 @@
+sektor C2, godzina, obszar, stan, skanery, temperatura, ruch, wykrycie, jednostka, patrol

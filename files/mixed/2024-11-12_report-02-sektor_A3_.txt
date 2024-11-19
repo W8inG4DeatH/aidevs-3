@@ -1,0 +1,1 @@
+sektor A3, godzina, obszar, patrol, monitoring, peryferie, obiekt, aktywność, zadania

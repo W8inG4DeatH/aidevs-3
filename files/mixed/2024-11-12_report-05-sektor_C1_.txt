@@ -1,0 +1,1 @@
+sektor C1, godzina, aktywność, sensor, dźwięk, detektor, ruch, gotowość, sygnał, patrol, monitorowanie
