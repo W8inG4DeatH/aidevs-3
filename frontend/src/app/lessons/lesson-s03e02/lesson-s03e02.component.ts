@@ -11,201 +11,135 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 export class LessonS03E02Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'dokumenty';
-
-    public factsFilesNames: string[] = [];
-    public raportsFilesNames: string[] = [];
-    public responseJson: any = {};
+    public taskIdentifier: string = 'wektory';
     public processStatus: string = '';
+    public baseAnswer: string = '';
     public reportResponse: any = '';
+    public aiPrompt: string = '';
 
     public backendUrl = `${environment.apiUrl}/lessons/s03e02`;
-
-    public factsAIPrompt: string = `
-### Wczuj się w rolę eksperta SEO. Twoim zadaniem jest utworzenie listy najważniejszych słów kluczowych w języku polskim (w mianowniku), które opisują daną treść. Słowa kluczowe nie mogą się powtarzać. Przy wyborze słów kluczowych skupiaj się głównie na: nazwy własne i rzeczowniki.
-Wynik końcowy: zwróć słowa kluczowe w jednym wierszu, oddzielone przecinkami i spacjami, bez kropki ani przecinka na koncu, np.: słowo1, słowo2, słowo3`;
-
-    public raportsAIPrompt: string = `
-### Wczuj się w rolę eksperta SEO. Twoim zadaniem jest utworzenie listy najważniejszych słów kluczowych w języku polskim (w mianowniku), które opisują daną treść. Słowa kluczowe nie mogą się powtarzać. Przy wyborze słów kluczowych skupiaj się głównie na: nazwy własne i rzeczowniki.
-Dodatkowo: z nazwy pliku '{{fileName}}' wyodrębnij nazwę sektora (np. "sektor C4") i umieść ją jako pierwsze słowo kluczowe na liście.
-#### Przykład:
-Nazwa pliku: 2024-11-12_report-00-sektor_C4.txt
-Lista słów kluczowych: sektor C4, dane, inspekcja, kontrola, fabryka, system, baza danych.
-Wynik końcowy: zwróć słowa kluczowe w jednym wierszu, oddzielone przecinkami i spacjami, bez kropki ani przecinka na koncu, np.: słowo1, słowo2, słowo3`;
+    public backendUrls03e01 = `${environment.apiUrl}/lessons/s03e01`;
 
     constructor(private http: HttpClient) {}
 
     ngOnInit() {}
 
-    private addSuffixToFileName(fileName: string, suffix: string): string {
-        const dotIndex = fileName.lastIndexOf('.');
-        if (dotIndex === -1) {
-            return fileName + suffix;
-        }
-        return fileName.substring(0, dotIndex) + suffix + fileName.substring(dotIndex);
-    }
-
     async processLesson() {
         try {
-            this.processStatus = 'Fetching files from server...';
-            console.log('Step 1: Fetching files from server.');
+            this.processStatus = 'Indexing report files...';
+            console.log('Step 1: Indexing report files.');
 
-            // Pobierz listę plików z serwera
-            const initialResponse: any = await this.http.get(`${this.backendUrl}/get-mixed-files`).toPromise();
-            const allFiles: string[] = initialResponse.files; // Zawiera wszystkie pliki w katalogu
-            console.log('Files fetched:', allFiles);
+            // Call backend to index reports
+            await this.http.post(`${this.backendUrl}/index-reports`, {}).toPromise();
+            console.log('Indexing completed.');
 
-            // Podziel pliki na fakty i raporty
-            this.factsFilesNames = allFiles.filter((fileName: string) => /^f\d{2}\.txt$/.test(fileName));
-            this.raportsFilesNames = allFiles.filter(
-                (fileName: string) =>
-                    !/^f\d{2}\.txt$/.test(fileName) && fileName.endsWith('.txt') && !fileName.endsWith('_.txt'),
-            );
-            console.log('Facts files:', this.factsFilesNames);
-            console.log('Raport files:', this.raportsFilesNames);
+            this.processStatus = 'Indexing completed. Querying the database...';
 
-            // Procesuj pliki raportów
-            for (let raportFileName of this.raportsFilesNames) {
-                const raportFileName_ = this.addSuffixToFileName(raportFileName, '_');
+            // Prepare the query
+            const queryText = 'W raporcie, z którego dnia znajduje się wzmianka o kradzieży prototypu broni?';
 
-                // Sprawdź, czy istnieje plik z kluczami
-                if (allFiles.includes(raportFileName_)) {
-                    console.log(`File ${raportFileName_} already exists. Skipping AI processing.`);
-                    continue;
-                }
+            // Send the query to the backend
+            const queryResponse: any = await this.http
+                .post(`${this.backendUrl}/query-reports`, { query: queryText })
+                .toPromise();
 
-                // Pobierz zawartość pliku
-                const fileContentResponse: any = await this.http
-                    .post(`${this.backendUrl}/get-text-file-content`, { fileName: raportFileName })
-                    .toPromise();
-                const reportContent = fileContentResponse.content;
+            this.baseAnswer = queryResponse.date || 'No date found.';
+            console.log('Query result:', this.baseAnswer);
 
-                // Wygeneruj prompt dla AI
-                const prompt = this.raportsAIPrompt.replace('{{fileName}}', raportFileName);
-                const aiPrompt = `${prompt}\n\n${reportContent}`;
-                console.log('Generated AI prompt:', aiPrompt);
+            this.processStatus = 'Query completed. Sending answer to Headquarters...';
 
-                // Wyślij do AI modelu
-                const aiPayload = {
-                    openAiModel: this.openAiModel,
-                    myAIPrompt: aiPrompt,
-                };
-                const aiResponse: any = await this.http
-                    .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                    .toPromise();
+            // Send the answer to Headquarters
+            await this.sendJsonToHeadquarters();
 
-                const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
-                console.log(`AI response for ${raportFileName}:`, responseContent);
-
-                // Zapisz odpowiedź do pliku
-                await this.http
-                    .post(`${this.backendUrl}/save-text-file-content`, {
-                        fileName: raportFileName_,
-                        content: responseContent,
-                    })
-                    .toPromise();
-            }
-
-            // Procesuj pliki faktów
-            for (let factFileName of this.factsFilesNames) {
-                const factFileName_ = this.addSuffixToFileName(factFileName, '_');
-
-                // Sprawdź, czy istnieje plik z kluczami
-                if (allFiles.includes(factFileName_)) {
-                    console.log(`File ${factFileName_} already exists. Skipping AI processing.`);
-                    continue;
-                }
-
-                // Pobierz zawartość pliku
-                const fileContentResponse: any = await this.http
-                    .post(`${this.backendUrl}/get-text-file-content`, { fileName: factFileName })
-                    .toPromise();
-                const factContent = fileContentResponse.content;
-
-                // Wygeneruj prompt dla AI
-                const aiPrompt = `${this.factsAIPrompt}\n\n${factContent}`;
-                const aiPayload = {
-                    openAiModel: this.openAiModel,
-                    myAIPrompt: aiPrompt,
-                };
-                const aiResponse: any = await this.http
-                    .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                    .toPromise();
-
-                const responseContent = aiResponse?.choices?.[0]?.message?.content || '';
-                console.log(`AI response for ${factFileName}:`, responseContent);
-
-                // Zapisz odpowiedź do pliku
-                await this.http
-                    .post(`${this.backendUrl}/save-text-file-content`, {
-                        fileName: factFileName_,
-                        content: responseContent,
-                    })
-                    .toPromise();
-            }
-
-            // Odczytaj istniejące pliki z kluczami i wygeneruj JSON
-            this.responseJson = {};
-            for (let raportFileName of this.raportsFilesNames) {
-                const raportFileName_ = this.addSuffixToFileName(raportFileName, '_');
-
-                // Pobierz zawartość istniejącego pliku z kluczami
-                const fileContentResponse: any = await this.http
-                    .post(`${this.backendUrl}/get-text-file-content`, { fileName: raportFileName_ })
-                    .toPromise();
-                const raportKeywords = fileContentResponse.content.split(',').map((kw: string) => kw.trim());
-
-                let additionalKeys: string[] = [];
-                for (let otherRaportFileName of this.raportsFilesNames) {
-                    if (otherRaportFileName !== raportFileName) {
-                        const otherRaportFileName_ = this.addSuffixToFileName(otherRaportFileName, '_');
-                        const otherFileContentResponse: any = await this.http
-                            .post(`${this.backendUrl}/get-text-file-content`, { fileName: otherRaportFileName_ })
-                            .toPromise();
-                        const otherRaportKeywords = otherFileContentResponse.content
-                            .split(',')
-                            .map((kw: string) => kw.trim());
-                        additionalKeys = additionalKeys.concat(otherRaportKeywords);
-                    }
-                }
-
-                for (let factFileName of this.factsFilesNames) {
-                    const factFileName_ = this.addSuffixToFileName(factFileName, '_');
-                    const factFileContentResponse: any = await this.http
-                        .post(`${this.backendUrl}/get-text-file-content`, { fileName: factFileName_ })
-                        .toPromise();
-                    const factKeywords = factFileContentResponse.content.split(',').map((kw: string) => kw.trim());
-                    additionalKeys = additionalKeys.concat(factKeywords);
-                }
-
-                const allKeywords = Array.from(new Set([...raportKeywords, ...additionalKeys]));
-                this.responseJson[raportFileName] = allKeywords.join(', ');
-            }
-
-            // Wyślij dane do centrali
-            await this.sendJsonToHeadquarters(this.responseJson);
+            this.processStatus = 'Lesson process completed successfully.';
         } catch (error) {
             this.processStatus = 'Error processing lesson.';
             console.error(this.processStatus, error);
         }
     }
 
-    async sendJsonToHeadquarters(answersJson: any) {
+    async processLessonR() {
         try {
-            this.processStatus = 'Sending answers to Headquarters...';
+            this.processStatus = 'Fetching report files and generating prompt...';
+            console.log(this.processStatus);
+
+            // Step 1: Fetch the list of all files from the "do-not-share" subfolder
+            const filesResponse: any = await this.http
+                .get(`${this.backendUrls03e01}/get-mixed-files?subfolder=do-not-share`)
+                .toPromise();
+            const allFiles: string[] = filesResponse.files;
+            console.log('Fetched files from do-not-share:', allFiles);
+
+            // Step 2: Filter report files
+            const reportFiles = allFiles.filter((fileName: string) => fileName.endsWith('.txt'));
+            console.log('Report files:', reportFiles);
+
+            // Step 3: Fetch the content of each report file
+            let allReportsContent = '';
+            for (const reportFile of reportFiles) {
+                const fileContentResponse: any = await this.http
+                    .post(`${this.backendUrls03e01}/get-text-file-content?subfolder=do-not-share`, { fileName: reportFile })
+                    .toPromise();
+
+                const fileContent = fileContentResponse.content;
+                allReportsContent += `Report Date: ${reportFile}\nContent:\n${fileContent}\n\n`;
+            }
+
+            console.log('Combined Reports Content:', allReportsContent);
+
+            // Step 4: Generate the AI prompt
+            this.aiPrompt = `
+  ### You are a helpful assistant. Analyze the following reports and answer the question based on the information provided:
+  ${allReportsContent}
+  Question: In the reports, on which date is there a mention of a prototype weapon theft?
+  Response: only date in format YYYY-MM-DD`;
+            console.log('Generated AI Prompt:', this.aiPrompt);
+
+            // Step 5: Send the AI prompt to the OpenAI API
+            const aiPayload = {
+                openAiModel: this.openAiModel,
+                myAIPrompt: this.aiPrompt,
+            };
+
+            this.processStatus = 'Sending prompt to AI model...';
+            console.log(this.processStatus);
+
+            const aiResponse: any = await this.http
+                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
+                .toPromise();
+
+            const aiAnswer = aiResponse?.choices?.[0]?.message?.content || 'No answer provided by AI.';
+            console.log('AI Answer:', aiAnswer);
+
+            // Step 6: Store the response in a global variable
+            this.baseAnswer = aiAnswer;
+
+            // Step 7: Send the AI response to Headquarters
+            this.processStatus = 'Sending AI response to Headquarters...';
+            await this.sendJsonToHeadquarters();
+
+            this.processStatus = 'Lesson process completed successfully.';
+            console.log(this.processStatus);
+        } catch (error) {
+            this.processStatus = 'Error in processLessonShort.';
+            console.error(this.processStatus, error);
+        }
+    }
+
+    async sendJsonToHeadquarters() {
+        try {
+            this.processStatus = 'Sending answer to Headquarters...';
             console.log(this.processStatus);
 
             const reportPayload = {
                 task: this.taskIdentifier,
                 apikey: this.apiKey,
-                answer: answersJson,
+                answer: this.baseAnswer,
             };
 
             const reportUrl = 'https://centrala.ag3nts.org/report';
 
             this.reportResponse = await this.http.post(reportUrl, reportPayload).toPromise();
-            this.processStatus = 'Lesson process completed successfully.';
-            console.log(this.processStatus);
             console.log('Report response:', this.reportResponse);
         } catch (error) {
             this.processStatus = 'Failed to send data to Headquarters.';
