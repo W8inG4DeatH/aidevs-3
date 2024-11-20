@@ -1,7 +1,7 @@
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="content-row-container full-width" fxLayout="column">Lesson s03e01</div>
+            <div class="content-row-container full-width" fxLayout="column">Lesson s03e03</div>
         </div>
 
         <div class="content-container">
@@ -10,24 +10,20 @@
         </div>
 
         <div class="content-container">
-            <div class="title">Facts Files Names:</div>
-            <ul>
-                <li *ngFor="let file of factsFilesNames">{{ file }}</li>
-            </ul>
-        </div>
-
-        <div class="content-container">
-            <div class="title">Reports Files Names:</div>
-            <ul>
-                <li *ngFor="let file of raportsFilesNames">{{ file }}</li>
-            </ul>
+            <div class="title">AI Prompt:</div>
+            <pre class="wrapped-text">{{ aiPrompt }}</pre>
         </div>
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container limited" *ngIf="responseJson">
-            <div class="title">Response JSON:</div>
-            <pre class="wrapped-text">{{ responseJson | json }}</pre>
+        <div class="content-container">
+            <div class="title">Generated SQL Query:</div>
+            <pre>{{ aiGeneratedQuery }}</pre>
+        </div>
+
+        <div class="content-container limited">
+            <div class="title">Database Answer:</div>
+            <pre class="wrapped-text">{{ databaseAnswer | json }}</pre>
         </div>
 
         <div class="content-container">
@@ -41,7 +37,7 @@
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
             <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
-                <div class="btn">Run Lesson s03e01</div>
+                <div class="btn">Run Lesson s03e03</div>
             </div>
         </div>
     </div>

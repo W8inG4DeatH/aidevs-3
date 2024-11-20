@@ -81,6 +81,12 @@ hr {
     margin-bottom: 10px;
 }
 
+.wrapped-text {
+  white-space: pre-wrap; /* Pozwala na zawijanie linii w `pre` */
+  word-wrap: break-word; /* Dodatkowa obsługa zawijania */
+  overflow-wrap: break-word; /* Obsługa zawijania długich słów */
+}
+
 .bolder {
     font-weight: bolder;
 }
