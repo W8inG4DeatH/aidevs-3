@@ -19,6 +19,7 @@ import { LessonS02E05Module } from './lesson-s02e05/lesson-s02e05.module';
 import { LessonS03E01Module } from './lesson-s03e01/lesson-s03e01.module';
 import { LessonS03E02Module } from './lesson-s03e02/lesson-s03e02.module';
 import { LessonS03E03Module } from './lesson-s03e03/lesson-s03e03.module';
+import { LessonS03E04Module } from './lesson-s03e04/lesson-s03e04.module';
 
 @NgModule({
     imports: [
@@ -40,6 +41,7 @@ import { LessonS03E03Module } from './lesson-s03e03/lesson-s03e03.module';
         LessonS03E01Module,
         LessonS03E02Module,
         LessonS03E03Module,
+        LessonS03E04Module,
     ],
 })
 export class LessonsModule { }
