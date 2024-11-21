@@ -10,20 +10,41 @@
         </div>
 
         <div class="content-container">
+            <div class="title">Text Data:</div>
+            <pre class="wrapped-text">{{ barbaraInitData }}</pre>
+        </div>
+
+        <div class="content-container limited">
             <div class="title">AI Prompt:</div>
             <pre class="wrapped-text">{{ aiPrompt }}</pre>
         </div>
+
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container">
-            <div class="title">Generated SQL Query:</div>
-            <pre>{{ aiGeneratedQuery }}</pre>
+            <div class="title">Cities Table:</div>
+            <pre class="wrapped-text">{{ citiesTable }}</pre>
         </div>
 
         <div class="content-container limited">
-            <div class="title">Database Answer:</div>
-            <pre class="wrapped-text">{{ databaseAnswer | json }}</pre>
+          <div class="title">Friends By City:</div>
+          <pre>{{ FriendsByCity | json }}</pre>
+      </div>
+
+      <div class="content-container">
+            <div class="title">Friends Table:</div>
+            <pre class="wrapped-text">{{ friendsTable }}</pre>
+        </div>
+
+        <div class="content-container limited">
+            <div class="title">Cities By Friend:</div>
+            <pre>{{ CitiesByFriend | json }}</pre>
+        </div>
+
+        <div class="content-container">
+            <div class="title">Main Answer:</div>
+            <pre>{{ mainAnswer }}</pre>
         </div>
 
         <div class="content-container">

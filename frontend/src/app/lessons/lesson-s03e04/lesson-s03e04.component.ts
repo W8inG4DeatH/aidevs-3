@@ -11,26 +11,33 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 export class LessonS03E04Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'database';
+    public taskIdentifier: string = 'loop';
 
     public processStatus: string = '';
-    public tableStructures: any = {};
+    public barbaraInitData: string = '';
+    public citiesTable: string[] = [];
+    public friendsTable: string[] = [];
     public aiPrompt: string = '';
-    public aiGeneratedQuery: string = '';
-    public databaseAnswer: any = '';
+    public aiResponseData: any = '';
+    public mainAnswer: string = '';
     public reportResponse: any = '';
+
+    public FriendsByCity: { [key: string]: any } = {};
+    public CitiesByFriend: { [key: string]: any } = {};
+
+    public searchPerson: string = 'BARBARA';
 
     public backendUrl = `${environment.apiUrl}/lessons/s03e04`;
 
-    // Prompty AI
-    public aiPromptStep2: string = `Mając poniższe struktury tabel:
-{{tableStructures}}
-Napisz zapytanie SQL, które zwraca identyfikatory (dc_id) z tabeli "datacenters", gdzie:
-- datacenter (datacenters.is_active = 1) jest aktywne
-- manager (users.is_active = 0) jest na urlopie.
-Tabele są połączone w następujący sposób:
-- datacenters.manager wskazuje na users.id.
-Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdown.
+    // AI prompt for Step 2
+    public aiPromptStep2: string = `
+### Extract from the TEXT_DATA:
+- An array of all city names (capital letters in nominative case, without Polish characters)
+- An array of first names of all people (capital letters in nominative case, without Polish characters)
+Return the result as a JSON object with two properties: "citiesTable" and "friendsTable".
+Make sure to output only the JSON object, without any additional text or markdown.
+### TEXT_DATA:
+{{barbaraInitData}}
 `;
 
     constructor(private http: HttpClient) {}
@@ -39,43 +46,25 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
 
     async processLesson() {
         try {
-            // Krok 1: Pobierz strukturę tabel
-            this.processStatus = 'Fetching table structures...';
+            // Step 1: Download barbara.txt
+            this.processStatus = 'Downloading barbara.txt...';
             console.log(this.processStatus);
 
-            const tables = ['users', 'datacenters', 'connections'];
-            this.tableStructures = {};
+            const barbaraResponse: any = await this.http.get(`${this.backendUrl}/get-barbara-data`).toPromise();
 
-            for (let tableName of tables) {
-                const payload = {
-                    task: this.taskIdentifier,
-                    apikey: this.apiKey,
-                    query: `SHOW CREATE TABLE ${tableName}`,
-                };
-
-                const response: any = await this.http.post(`${this.backendUrl}/proxy-apidb`, payload).toPromise();
-
-                console.log(`Response for table ${tableName}:`, response);
-
-                if (response && response.reply && response.reply.length > 0) {
-                    const createTableSql = response.reply[0]['Create Table'];
-                    this.tableStructures[tableName] = createTableSql;
-                } else {
-                    console.warn(`No valid data returned for table: ${tableName}`);
-                    this.tableStructures[tableName] = 'No structure available';
-                }
+            if (barbaraResponse && barbaraResponse.data) {
+                this.barbaraInitData = barbaraResponse.data;
+                console.log('Barbara data:', this.barbaraInitData);
+            } else {
+                console.warn('No data received from backend.');
+                this.barbaraInitData = '';
             }
 
-            console.log('Final table structures:', this.tableStructures);
-
-            // Krok 2: Generowanie zapytania SQL przez AI
-            this.processStatus = 'Generating SQL query with AI...';
+            // Step 2: Use AI to extract citiesTable and friendsTable
+            this.processStatus = 'Extracting data using AI...';
             console.log(this.processStatus);
 
-            this.aiPrompt = this.aiPromptStep2.replace(
-                '{{tableStructures}}',
-                JSON.stringify(this.tableStructures, null, 2),
-            );
+            this.aiPrompt = this.aiPromptStep2.replace('{{barbaraInitData}}', this.barbaraInitData);
 
             const aiPayload = {
                 openAiModel: this.openAiModel,
@@ -86,32 +75,160 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
                 .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
                 .toPromise();
 
-            this.aiGeneratedQuery = aiResponse?.choices?.[0]?.message?.content.trim();
-            console.log('Generated SQL Query:', this.aiGeneratedQuery);
+            console.log('AI Response:', aiResponse);
 
-            // Krok 3: Wykonanie zapytania SQL
-            this.processStatus = 'Executing SQL query...';
-            console.log(this.processStatus);
+            const aiContent = aiResponse?.choices?.[0]?.message?.content.trim();
+            console.log('AI Content:', aiContent);
 
-            const queryPayload = {
-                task: this.taskIdentifier,
-                apikey: this.apiKey,
-                query: this.aiGeneratedQuery,
-            };
-
-            const queryResponse: any = await this.http.post(`${this.backendUrl}/proxy-apidb`, queryPayload).toPromise();
-
-            console.log('Response from backend:', queryResponse);
-
-            if (queryResponse && queryResponse.reply && queryResponse.reply.length > 0) {
-                this.databaseAnswer = queryResponse.reply.map((row: any) => row.dc_id); // Pobierz tylko dc_id
-                console.log('Database answer:', this.databaseAnswer);
-            } else {
-                console.warn('No valid data returned for the query.');
-                this.databaseAnswer = [];
+            // Parse AI response
+            try {
+                const aiData = JSON.parse(aiContent);
+                this.citiesTable = aiData.citiesTable;
+                this.friendsTable = aiData.friendsTable;
+            } catch (error) {
+                console.error('Error parsing AI response:', error);
+                this.citiesTable = [];
+                this.friendsTable = [];
             }
 
-            // Krok 4: Przesłanie odpowiedzi do centrali
+            // Repeat steps 4-7 until no changes are made to citiesTable
+            let citiesChanged = true;
+            while (citiesChanged) {
+                citiesChanged = false;
+
+                // Step 4: Query places for each city and update FriendsByCity
+                this.processStatus = 'Querying places for each city...';
+                console.log(this.processStatus);
+
+                this.FriendsByCity = {}; // Initialize the variable
+
+                for (let city of this.citiesTable) {
+                    const payload = {
+                        apikey: this.apiKey,
+                        query: city,
+                    };
+
+                    try {
+                        const response: any = await this.http
+                            .post(`${this.backendUrl}/check-place`, payload)
+                            .toPromise();
+                        console.log(`Response for city ${city}:`, response);
+
+                        // Store response in FriendsByCity
+                        this.FriendsByCity[city] = response;
+                    } catch (error) {
+                        console.error(`Error for city ${city}:`, error);
+                        this.FriendsByCity[city] = { error: true, message: 'Request failed' }; // Save error state
+                    }
+                }
+
+                // Step 5: Generate friendsTable from FriendsByCity
+                this.processStatus = 'Generating friendsTable from FriendsByCity...';
+                console.log(this.processStatus);
+
+                let allFriends: string[] = []; // Initialize an array to collect all friends
+
+                // Iterate over FriendsByCity to extract names
+                for (const city in this.FriendsByCity) {
+                    if (
+                        this.FriendsByCity[city] &&
+                        this.FriendsByCity[city].code === 0 && // Ensure code is 0
+                        this.FriendsByCity[city].message && // Ensure message exists
+                        !this.FriendsByCity[city].message.includes('[**RESTRICTED DATA**]') // Skip restricted data
+                    ) {
+                        const friends = this.FriendsByCity[city].message.split(' '); // Split message into individual names
+                        allFriends = allFriends.concat(friends); // Add names to the array
+                    } else {
+                        console.warn(`Skipping restricted or invalid data for city: ${city}`);
+                    }
+                }
+
+                // Remove duplicates and update friendsTable
+                const uniqueFriends = Array.from(new Set(allFriends));
+                if (uniqueFriends.length !== this.friendsTable.length) {
+                    this.friendsTable = uniqueFriends;
+                    console.log('Updated friendsTable:', this.friendsTable);
+                }
+
+                // Step 6: Query people for each friend and update CitiesByFriend
+                this.processStatus = 'Querying people for each friend...';
+                console.log(this.processStatus);
+
+                this.CitiesByFriend = {}; // Initialize the variable
+
+                for (let friend of this.friendsTable) {
+                    const payload = {
+                        apikey: this.apiKey,
+                        query: friend,
+                    };
+
+                    try {
+                        const response: any = await this.http
+                            .post(`${this.backendUrl}/check-person`, payload)
+                            .toPromise();
+                        console.log(`Response for friend ${friend}:`, response);
+
+                        // Store response in CitiesByFriend
+                        this.CitiesByFriend[friend] = response;
+                    } catch (error) {
+                        console.error(`Error for friend ${friend}:`, error);
+                        this.CitiesByFriend[friend] = { error: true, message: 'Request failed' }; // Save error state
+                    }
+                }
+
+                // Step 7: Generate mainAnswerCities from CitiesByFriend and update citiesTable
+                this.processStatus = 'Generating mainAnswerCities from CitiesByFriend...';
+                console.log(this.processStatus);
+
+                let allCities: string[] = []; // Initialize an array to collect all cities
+
+                // Iterate over CitiesByFriend to extract city names
+                for (const friend in this.CitiesByFriend) {
+                    if (
+                        this.CitiesByFriend[friend] &&
+                        this.CitiesByFriend[friend].code === 0 && // Ensure code is 0
+                        this.CitiesByFriend[friend].message && // Ensure message exists
+                        !this.CitiesByFriend[friend].message.includes('[**RESTRICTED DATA**]') // Skip restricted data
+                    ) {
+                        const cities = this.CitiesByFriend[friend].message.split(' '); // Split message into individual city names
+                        allCities = allCities.concat(cities); // Add cities to the array
+                    } else {
+                        console.warn(`Skipping restricted or invalid data for friend: ${friend}`);
+                    }
+                }
+
+                // Remove duplicates and update mainAnswerCities
+                const uniqueCities = Array.from(new Set(allCities));
+                if (uniqueCities.length > this.citiesTable.length) {
+                    this.citiesTable = uniqueCities;
+                    citiesChanged = true;
+                    console.log('Updated citiesTable:', this.citiesTable);
+                }
+            }
+
+            // Step 8: Check FriendsByCity and update mainAnswer
+            this.processStatus = 'Checking for search person in FriendsByCity...';
+            console.log(this.processStatus);
+
+            this.mainAnswer = ''; // Initialize mainAnswer
+
+            for (const city in this.FriendsByCity) {
+                if (
+                    this.FriendsByCity[city] &&
+                    this.FriendsByCity[city].message &&
+                    this.FriendsByCity[city].message === this.searchPerson
+                ) {
+                    this.mainAnswer = city; // Assign the city name to mainAnswer
+                    console.log(`Found restricted data in city: ${city}`);
+                    break; // Stop after finding the first match
+                }
+            }
+
+            if (!this.mainAnswer) {
+                console.log('No restricted data found in FriendsByCity.');
+            }
+
+            // Final Step: Przesłanie odpowiedzi do centrali
             await this.sendJsonToHeadquarters();
 
             this.processStatus = 'Lesson process completed successfully.';
@@ -123,19 +240,19 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
 
     async sendJsonToHeadquarters() {
         try {
-            this.processStatus = 'Sending answers to Headquarters...';
+            this.processStatus = 'Sending answer to Headquarters...';
             console.log(this.processStatus);
 
             const reportPayload = {
                 task: this.taskIdentifier,
                 apikey: this.apiKey,
-                answer: this.databaseAnswer,
+                answer: this.mainAnswer,
             };
 
             const reportUrl = 'https://centrala.ag3nts.org/report';
 
             this.reportResponse = await this.http.post(reportUrl, reportPayload).toPromise();
-            this.processStatus = 'Lesson process completed successfully.';
+            this.processStatus = 'Answer sent to Headquarters.';
             console.log(this.processStatus);
             console.log('Report response:', this.reportResponse);
         } catch (error) {
