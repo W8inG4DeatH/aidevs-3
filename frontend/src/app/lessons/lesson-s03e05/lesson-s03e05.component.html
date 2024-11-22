@@ -9,21 +9,26 @@
             <div>{{ processStatus }}</div>
         </div>
 
-        <div class="content-container">
-            <div class="title">AI Prompt:</div>
-            <pre class="wrapped-text">{{ aiPrompt }}</pre>
+        <div class="content-container limited">
+            <div class="title">Users Data:</div>
+            <pre class="wrapped-text">{{ usersData | json }}</pre>
+        </div>
+
+        <div class="content-container limited">
+            <div class="title">Connections Data:</div>
+            <pre class="wrapped-text">{{ connectionsData | json }}</pre>
         </div>
     </div>
 
     <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container">
-            <div class="title">Generated SQL Query:</div>
-            <pre>{{ aiGeneratedQuery }}</pre>
+        <div class="content-container limited-long">
+            <div class="title">Graph Database:</div>
+            <pre class="wrapped-text">{{ graphDatabase | json }}</pre>
         </div>
 
-        <div class="content-container limited">
-            <div class="title">Database Answer:</div>
-            <pre class="wrapped-text">{{ databaseAnswer | json }}</pre>
+        <div class="content-container">
+            <div class="title">Main Answer (Shortest Path):</div>
+            <div>{{ mainAnswer }}</div>
         </div>
 
         <div class="content-container">

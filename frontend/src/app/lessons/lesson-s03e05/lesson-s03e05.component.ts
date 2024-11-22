@@ -11,27 +11,24 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 export class LessonS03E05Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'database';
+    public taskIdentifier: string = 'connections';
 
     public processStatus: string = '';
-    public tableStructures: any = {};
-    public aiPrompt: string = '';
-    public aiGeneratedQuery: string = '';
-    public databaseAnswer: any = '';
+
+    // Krok 1: Zmienne do przechowywania danych tabel
+    public usersData: any[] = [];
+    public connectionsData: any[] = [];
+
+    // Krok 2: Baza grafowa
+    public graphDatabase: any = {};
+
+    // Krok 3: Główna odpowiedź
+    public mainAnswer: string = '';
+
+    // Krok 4: Odpowiedź z centrali
     public reportResponse: any = '';
 
     public backendUrl = `${environment.apiUrl}/lessons/s03e05`;
-
-    // Prompty AI
-    public aiPromptStep2: string = `Mając poniższe struktury tabel:
-{{tableStructures}}
-Napisz zapytanie SQL, które zwraca identyfikatory (dc_id) z tabeli "datacenters", gdzie:
-- datacenter (datacenters.is_active = 1) jest aktywne
-- manager (users.is_active = 0) jest na urlopie.
-Tabele są połączone w następujący sposób:
-- datacenters.manager wskazuje na users.id.
-Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdown.
-`;
 
     constructor(private http: HttpClient) {}
 
@@ -39,18 +36,19 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
 
     async processLesson() {
         try {
-            // Krok 1: Pobierz strukturę tabel
-            this.processStatus = 'Fetching table structures...';
+            // Krok 1: Pobierz dane tabel
+            this.processStatus = 'Fetching table data...';
             console.log(this.processStatus);
 
-            const tables = ['users', 'datacenters', 'connections'];
-            this.tableStructures = {};
+            const tables = ['users', 'connections'];
+            this.usersData = [];
+            this.connectionsData = [];
 
             for (let tableName of tables) {
                 const payload = {
-                    task: this.taskIdentifier,
+                    task: 'database',
                     apikey: this.apiKey,
-                    query: `SHOW CREATE TABLE ${tableName}`,
+                    query: `SELECT * FROM ${tableName}`,
                 };
 
                 const response: any = await this.http.post(`${this.backendUrl}/proxy-apidb`, payload).toPromise();
@@ -58,58 +56,69 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
                 console.log(`Response for table ${tableName}:`, response);
 
                 if (response && response.reply && response.reply.length > 0) {
-                    const createTableSql = response.reply[0]['Create Table'];
-                    this.tableStructures[tableName] = createTableSql;
+                    if (tableName === 'users') {
+                        this.usersData = response.reply;
+                    } else if (tableName === 'connections') {
+                        this.connectionsData = response.reply;
+                    }
                 } else {
                     console.warn(`No valid data returned for table: ${tableName}`);
-                    this.tableStructures[tableName] = 'No structure available';
                 }
             }
 
-            console.log('Final table structures:', this.tableStructures);
+            console.log('Users data:', this.usersData);
+            console.log('Connections data:', this.connectionsData);
 
-            // Krok 2: Generowanie zapytania SQL przez AI
-            this.processStatus = 'Generating SQL query with AI...';
+            // Krok 2: Budowanie bazy grafowej
+            this.processStatus = 'Building graph database...';
             console.log(this.processStatus);
 
-            this.aiPrompt = this.aiPromptStep2.replace(
-                '{{tableStructures}}',
-                JSON.stringify(this.tableStructures, null, 2),
-            );
+            // Mapowanie ID użytkowników na ich imiona
+            const userIdToNameMap: { [key: string]: string } = {};
+            this.usersData.forEach((user) => {
+                userIdToNameMap[user.id] = user.username; // Poprawiono nazwę pola na "username"
+            });
 
-            const aiPayload = {
-                openAiModel: this.openAiModel,
-                myAIPrompt: this.aiPrompt,
-            };
+            // Tworzenie grafu
+            this.graphDatabase = {};
+            this.connectionsData.forEach((connection) => {
+                const sourceId = connection.user1_id; // Poprawiono nazwę pola na "user1_id"
+                const targetId = connection.user2_id; // Poprawiono nazwę pola na "user2_id"
 
-            const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                .toPromise();
+                if (!this.graphDatabase[sourceId]) {
+                    this.graphDatabase[sourceId] = [];
+                }
+                this.graphDatabase[sourceId].push(targetId);
+            });
 
-            this.aiGeneratedQuery = aiResponse?.choices?.[0]?.message?.content.trim();
-            console.log('Generated SQL Query:', this.aiGeneratedQuery);
+            console.log('Graph database:', this.graphDatabase);
 
-            // Krok 3: Wykonanie zapytania SQL
-            this.processStatus = 'Executing SQL query...';
+            // Krok 3: Znalezienie najkrótszej ścieżki
+            this.processStatus = 'Finding shortest path from Rafal to Barbara...';
             console.log(this.processStatus);
 
-            const queryPayload = {
-                task: this.taskIdentifier,
-                apikey: this.apiKey,
-                query: this.aiGeneratedQuery,
-            };
+            const startUserName = 'Rafał';
+            const endUserName = 'Barbara';
 
-            const queryResponse: any = await this.http.post(`${this.backendUrl}/proxy-apidb`, queryPayload).toPromise();
+            const startUserId = this.getUserIdByName(startUserName, this.usersData);
+            const endUserId = this.getUserIdByName(endUserName, this.usersData);
 
-            console.log('Response from backend:', queryResponse);
-
-            if (queryResponse && queryResponse.reply && queryResponse.reply.length > 0) {
-                this.databaseAnswer = queryResponse.reply.map((row: any) => row.dc_id); // Pobierz tylko dc_id
-                console.log('Database answer:', this.databaseAnswer);
-            } else {
-                console.warn('No valid data returned for the query.');
-                this.databaseAnswer = [];
+            console.log(`Start User ID: ${startUserId}, End User ID: ${endUserId}`);
+            if (startUserId === null || endUserId === null) {
+                throw new Error('Start or end user not found in users data.');
             }
+
+            const pathUserIds = this.findShortestPath(startUserId, endUserId, this.graphDatabase);
+
+            if (pathUserIds.length === 0) {
+                this.mainAnswer = `No path found from ${startUserName} to ${endUserName}.`;
+            } else {
+                // Mapowanie ID na imiona
+                const pathUserNames = pathUserIds.map((userId) => userIdToNameMap[userId]);
+                this.mainAnswer = pathUserNames.join(',');
+            }
+
+            console.log('Main Answer:', this.mainAnswer);
 
             // Krok 4: Przesłanie odpowiedzi do centrali
             await this.sendJsonToHeadquarters();
@@ -121,21 +130,64 @@ Zwróć tylko poprawne zapytanie SQL bez dodatkowego tekstu, dekoracji i markdow
         }
     }
 
+    getUserIdByName(userName: string, usersData: any[]): string | null {
+        console.log(`Searching for user: ${userName}`);
+        const user = usersData.find((u) => u.username === userName); // Poprawione na zgodne z polami
+        console.log(`Found user: ${JSON.stringify(user)}`);
+        return user ? user.id : null;
+    }
+
+    findShortestPath(startUserId: string, endUserId: string, graph: any): string[] {
+        const queue: string[][] = [];
+        const visited: Set<string> = new Set();
+
+        queue.push([startUserId]);
+        visited.add(startUserId);
+
+        console.log(`Starting BFS from ${startUserId} to ${endUserId}`);
+
+        while (queue.length > 0) {
+            const path = queue.shift();
+            if (!path) continue;
+            const lastNode = path[path.length - 1];
+
+            console.log(`Visiting node: ${lastNode}`);
+
+            if (lastNode === endUserId) {
+                console.log(`Path found: ${path}`);
+                return path;
+            }
+
+            const neighbors = graph[lastNode] || [];
+            console.log(`Neighbors of ${lastNode}: ${neighbors}`);
+
+            for (let neighbor of neighbors) {
+                if (!visited.has(neighbor)) {
+                    visited.add(neighbor);
+                    queue.push([...path, neighbor]);
+                }
+            }
+        }
+
+        console.log('No path found');
+        return [];
+    }
+
     async sendJsonToHeadquarters() {
         try {
-            this.processStatus = 'Sending answers to Headquarters...';
+            this.processStatus = 'Sending answer to Headquarters...';
             console.log(this.processStatus);
 
             const reportPayload = {
                 task: this.taskIdentifier,
                 apikey: this.apiKey,
-                answer: this.databaseAnswer,
+                answer: this.mainAnswer,
             };
 
             const reportUrl = 'https://centrala.ag3nts.org/report';
 
             this.reportResponse = await this.http.post(reportUrl, reportPayload).toPromise();
-            this.processStatus = 'Lesson process completed successfully.';
+            this.processStatus = 'Answer sent successfully.';
             console.log(this.processStatus);
             console.log('Report response:', this.reportResponse);
         } catch (error) {

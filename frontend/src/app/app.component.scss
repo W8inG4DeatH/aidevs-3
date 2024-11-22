@@ -55,6 +55,11 @@
         overflow-y: auto;
     }
 
+    &.limited-long {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
     &.gray {
         background-color: $grey-light;
     }
@@ -82,9 +87,9 @@ hr {
 }
 
 .wrapped-text {
-  white-space: pre-wrap; /* Pozwala na zawijanie linii w `pre` */
-  word-wrap: break-word; /* Dodatkowa obsługa zawijania */
-  overflow-wrap: break-word; /* Obsługa zawijania długich słów */
+    white-space: pre-wrap; /* Pozwala na zawijanie linii w `pre` */
+    word-wrap: break-word; /* Dodatkowa obsługa zawijania */
+    overflow-wrap: break-word; /* Obsługa zawijania długich słów */
 }
 
 .bolder {
