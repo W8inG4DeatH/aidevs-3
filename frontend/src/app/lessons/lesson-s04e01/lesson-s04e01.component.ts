@@ -11,34 +11,17 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 export class LessonS04E01Component implements OnInit {
     public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
-    public taskIdentifier: string = 'loop';
+    public taskIdentifier: string = 'photos';
 
     public processStatus: string = '';
-    public barbaraInitData: string = '';
-    public citiesTable: string[] = [];
-    public friendsTable: string[] = [];
-    public aiPrompt: string = '';
-    public aiResponseData: any = '';
+    public images: any[] = []; // Array to hold images and their statuses
+    public processLogs: string[] = []; // Logs for display
     public mainAnswer: string = '';
     public reportResponse: any = '';
 
-    public FriendsByCity: { [key: string]: any } = {};
-    public CitiesByFriend: { [key: string]: any } = {};
-
-    public searchPerson: string = 'BARBARA';
+    public baseUrl: string = 'https://centrala.ag3nts.org/dane/barbara/';
 
     public backendUrl = `${environment.apiUrl}/lessons/s04e01`;
-
-    // AI prompt for Step 2
-    public aiPromptStep2: string = `
-### Extract from the TEXT_DATA:
-- An array of all city names (capital letters in nominative case, without Polish characters)
-- An array of first names of all people (capital letters in nominative case, without Polish characters)
-Return the result as a JSON object with two properties: "citiesTable" and "friendsTable".
-Make sure to output only the JSON object, without any additional text or markdown.
-### TEXT_DATA:
-{{barbaraInitData}}
-`;
 
     constructor(private http: HttpClient) {}
 
@@ -46,195 +29,117 @@ Make sure to output only the JSON object, without any additional text or markdow
 
     async processLesson() {
         try {
-            // Step 1: Download barbara.txt
-            this.processStatus = 'Downloading barbara.txt...';
+            this.processStatus = 'Starting conversation with automaton...';
             console.log(this.processStatus);
 
-            const barbaraResponse: any = await this.http.get(`${this.backendUrl}/get-barbara-data`).toPromise();
-
-            if (barbaraResponse && barbaraResponse.data) {
-                this.barbaraInitData = barbaraResponse.data;
-                console.log('Barbara data:', this.barbaraInitData);
-            } else {
-                console.warn('No data received from backend.');
-                this.barbaraInitData = '';
-            }
-
-            // Step 2: Use AI to extract citiesTable and friendsTable
-            this.processStatus = 'Extracting data using AI...';
-            console.log(this.processStatus);
-
-            this.aiPrompt = this.aiPromptStep2.replace('{{barbaraInitData}}', this.barbaraInitData);
-
-            const aiPayload = {
-                openAiModel: this.openAiModel,
-                myAIPrompt: this.aiPrompt,
+            const payload = {
+                task: this.taskIdentifier,
+                apikey: this.apiKey,
+                answer: 'START',
             };
 
-            const aiResponse: any = await this.http
-                .post(`${environment.apiUrl}/ai_agents/openai_agent/send-prompt`, aiPayload)
-                .toPromise();
+            const response: any = await this.http.post(`${this.backendUrl}/start-conversation`, payload).toPromise();
 
-            console.log('AI Response:', aiResponse);
+            console.log('Response from Central:', response);
 
-            const aiContent = aiResponse?.choices?.[0]?.message?.content.trim();
-            console.log('AI Content:', aiContent);
+            if (response && response.message) {
+                const message = response.message;
 
-            // Parse AI response
-            try {
-                const aiData = JSON.parse(aiContent);
-                this.citiesTable = aiData.citiesTable;
-                this.friendsTable = aiData.friendsTable;
-            } catch (error) {
-                console.error('Error parsing AI response:', error);
-                this.citiesTable = [];
-                this.friendsTable = [];
-            }
+                // Wyrażenie regularne do wyodrębnienia nazw plików
+                const fileNames = message.match(/\bIMG_\d+(_[A-Z0-9]+)?\.(png|jpg|jpeg)\b/gi) || [];
 
-            // Repeat steps 4-7 until no changes are made to citiesTable
-            let citiesChanged = true;
-            while (citiesChanged) {
-                citiesChanged = false;
-
-                // Step 4: Query places for each city and update FriendsByCity
-                this.processStatus = 'Querying places for each city...';
-                console.log(this.processStatus);
-
-                this.FriendsByCity = {}; // Initialize the variable
-
-                for (let city of this.citiesTable) {
-                    const payload = {
-                        apikey: this.apiKey,
-                        query: city,
+                // Tworzenie pełnych URL-i na podstawie nazwy pliku i `baseUrl`
+                this.images = fileNames.map((fileName: any) => {
+                    const fullUrl = `${this.baseUrl}${fileName}`;
+                    return {
+                        originalUrl: fullUrl, // Ustawianie oryginalnego URL-a
+                        url: fullUrl,
+                        fileName,
+                        operations: [],
+                        description: '',
                     };
+                });
 
-                    try {
-                        const response: any = await this.http
-                            .post(`${this.backendUrl}/check-place`, payload)
-                            .toPromise();
-                        console.log(`Response for city ${city}:`, response);
-
-                        // Store response in FriendsByCity
-                        this.FriendsByCity[city] = response;
-                    } catch (error) {
-                        console.error(`Error for city ${city}:`, error);
-                        this.FriendsByCity[city] = { error: true, message: 'Request failed' }; // Save error state
-                    }
-                }
-
-                // Step 5: Generate friendsTable from FriendsByCity
-                this.processStatus = 'Generating friendsTable from FriendsByCity...';
-                console.log(this.processStatus);
-
-                let allFriends: string[] = []; // Initialize an array to collect all friends
-
-                // Iterate over FriendsByCity to extract names
-                for (const city in this.FriendsByCity) {
-                    if (
-                        this.FriendsByCity[city] &&
-                        this.FriendsByCity[city].code === 0 && // Ensure code is 0
-                        this.FriendsByCity[city].message && // Ensure message exists
-                        !this.FriendsByCity[city].message.includes('[**RESTRICTED DATA**]') // Skip restricted data
-                    ) {
-                        const friends = this.FriendsByCity[city].message.split(' '); // Split message into individual names
-                        allFriends = allFriends.concat(friends); // Add names to the array
-                    } else {
-                        console.warn(`Skipping restricted or invalid data for city: ${city}`);
-                    }
-                }
-
-                // Remove duplicates and update friendsTable
-                const uniqueFriends = Array.from(new Set(allFriends));
-                if (uniqueFriends.length !== this.friendsTable.length) {
-                    this.friendsTable = uniqueFriends;
-                    console.log('Updated friendsTable:', this.friendsTable);
-                }
-
-                // Step 6: Query people for each friend and update CitiesByFriend
-                this.processStatus = 'Querying people for each friend...';
-                console.log(this.processStatus);
-
-                this.CitiesByFriend = {}; // Initialize the variable
-
-                for (let friend of this.friendsTable) {
-                    const payload = {
-                        apikey: this.apiKey,
-                        query: friend,
-                    };
-
-                    try {
-                        const response: any = await this.http
-                            .post(`${this.backendUrl}/check-person`, payload)
-                            .toPromise();
-                        console.log(`Response for friend ${friend}:`, response);
-
-                        // Store response in CitiesByFriend
-                        this.CitiesByFriend[friend] = response;
-                    } catch (error) {
-                        console.error(`Error for friend ${friend}:`, error);
-                        this.CitiesByFriend[friend] = { error: true, message: 'Request failed' }; // Save error state
-                    }
-                }
-
-                // Step 7: Generate mainAnswerCities from CitiesByFriend and update citiesTable
-                this.processStatus = 'Generating mainAnswerCities from CitiesByFriend...';
-                console.log(this.processStatus);
-
-                let allCities: string[] = []; // Initialize an array to collect all cities
-
-                // Iterate over CitiesByFriend to extract city names
-                for (const friend in this.CitiesByFriend) {
-                    if (
-                        this.CitiesByFriend[friend] &&
-                        this.CitiesByFriend[friend].code === 0 && // Ensure code is 0
-                        this.CitiesByFriend[friend].message && // Ensure message exists
-                        !this.CitiesByFriend[friend].message.includes('[**RESTRICTED DATA**]') // Skip restricted data
-                    ) {
-                        const cities = this.CitiesByFriend[friend].message.split(' '); // Split message into individual city names
-                        allCities = allCities.concat(cities); // Add cities to the array
-                    } else {
-                        console.warn(`Skipping restricted or invalid data for friend: ${friend}`);
-                    }
-                }
-
-                // Remove duplicates and update mainAnswerCities
-                const uniqueCities = Array.from(new Set(allCities));
-                if (uniqueCities.length > this.citiesTable.length) {
-                    this.citiesTable = uniqueCities;
-                    citiesChanged = true;
-                    console.log('Updated citiesTable:', this.citiesTable);
-                }
+                console.log('Images:', this.images);
+            } else {
+                console.warn('No images received from Central.');
+                this.images = [];
             }
 
-            // Step 8: Check FriendsByCity and update mainAnswer
-            this.processStatus = 'Checking for search person in FriendsByCity...';
-            console.log(this.processStatus);
-
-            this.mainAnswer = ''; // Initialize mainAnswer
-
-            for (const city in this.FriendsByCity) {
-                if (
-                    this.FriendsByCity[city] &&
-                    this.FriendsByCity[city].message &&
-                    this.FriendsByCity[city].message === this.searchPerson
-                ) {
-                    this.mainAnswer = city; // Assign the city name to mainAnswer
-                    console.log(`Found restricted data in city: ${city}`);
-                    break; // Stop after finding the first match
-                }
-            }
-
-            if (!this.mainAnswer) {
-                console.log('No restricted data found in FriendsByCity.');
-            }
-
-            // Final Step: Przesłanie odpowiedzi do centrali
-            await this.sendJsonToHeadquarters();
-
-            this.processStatus = 'Lesson process completed successfully.';
+            this.processStatus = 'Images received and displayed.';
         } catch (error) {
-            this.processStatus = 'Error processing lesson.';
+            this.processStatus = 'Error starting conversation.';
             console.error(this.processStatus, error);
+        }
+    }
+
+    extractFileName(imageUrl: string): string {
+        return imageUrl.split('/').pop() || '';
+    }
+
+    applyOperation(image: any, operation: string) {
+        const command = `${operation} ${image.fileName}`;
+        const payload = {
+            task: this.taskIdentifier,
+            apikey: this.apiKey,
+            answer: command,
+        };
+
+        this.http.post(`${this.backendUrl}/send-command`, payload).subscribe(
+            (response: any) => {
+                console.log(`Response for command ${command}:`, response);
+
+                if (response && response.message) {
+                    // Wyodrębnianie nazwy pliku z odpowiedzi
+                    const newFileName = response.message.match(/\bIMG_\d+(_[A-Z0-9]+)?\.(png|jpg|jpeg)\b/i)?.[0];
+
+                    if (newFileName) {
+                        // Aktualizacja tylko `url`, `originalUrl` pozostaje bez zmian
+                        image.url = `${this.baseUrl}${newFileName}`;
+                        image.fileName = newFileName;
+                        console.log(`Image updated: ${image.fileName}`);
+                    }
+                }
+
+                // Dodawanie operacji do listy
+                image.operations.push(operation);
+            },
+            (error) => {
+                console.error(`Error applying operation ${operation} to image ${image.fileName}:`, error);
+            },
+        );
+    }
+
+    async sendImageDescription(image: any) {
+        try {
+            this.processLogs.push(`Processing image file: ${image.fileName}`);
+
+            // Prepare the payload for the process-image endpoint
+            const payload = {
+                imageFileName: image.fileName, // Aktualna nazwa pliku po operacjach
+                baseUrl: this.baseUrl, // URL bazowy
+                prompt: `Przedstaw szczegółowy opis osoby na zdjęciu: ${image.fileName}`,
+                model: this.openAiModel,
+            };
+
+            // Send the image for processing
+            const response: any = await this.http.post(`${this.backendUrl}/process-image`, payload).toPromise();
+            console.log('Response from process-image:', response);
+
+            // Extract the result and update the image description
+            image.description = response.result || '';
+
+            // Update the main answer
+            this.mainAnswer = image.description;
+
+            // Log success
+            this.processLogs.push(`Image ${image.fileName} processed successfully.`);
+
+            // Send the final answer to Headquarters
+            await this.sendJsonToHeadquarters();
+        } catch (error) {
+            console.error(`Error processing image file ${image.fileName}:`, error);
+            this.processLogs.push(`Error processing image file: ${image.fileName}`);
         }
     }
 
