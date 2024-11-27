@@ -21,6 +21,7 @@ import { LessonS03E03Component } from 'src/app/lessons/lesson-s03e03/lesson-s03e
 import { LessonS03E04Component } from 'src/app/lessons/lesson-s03e04/lesson-s03e04.component';
 import { LessonS03E05Component } from 'src/app/lessons/lesson-s03e05/lesson-s03e05.component';
 import { LessonS04E01Component } from 'src/app/lessons/lesson-s04e01/lesson-s04e01.component';
+import { LessonS04E02Component } from 'src/app/lessons/lesson-s04e02/lesson-s04e02.component';
 
 const routes: Routes = [
     { path: '', component: WidgetsPanelComponent },
@@ -43,6 +44,7 @@ const routes: Routes = [
     { path: 'lessons/lesson-s03e04', component: LessonS03E04Component },
     { path: 'lessons/lesson-s03e05', component: LessonS03E05Component },
     { path: 'lessons/lesson-s04e01', component: LessonS04E01Component },
+    { path: 'lessons/lesson-s04e02', component: LessonS04E02Component },
 ];
 
 @NgModule({
