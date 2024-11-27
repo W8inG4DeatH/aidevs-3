@@ -5,30 +5,8 @@
         </div>
     </div>
 </div>
-<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
-    <div *ngFor="let image of images" class="section-container" fxLayout="column" fxFlex="25">
-        <div class="content-container">
-            <img [src]="image.originalUrl" alt="{{ image.fileName }}" style="width: 100%" />
-        </div>
 
-        <div class="content-container">
-            <div (click)="applyOperation(image, 'REPAIR')" class="btn">REPAIR</div>
-            <div (click)="applyOperation(image, 'DARKEN')" class="btn">DARKEN</div>
-            <div (click)="applyOperation(image, 'BRIGHTEN')" class="btn">BRIGHTEN</div>
-            <div (click)="sendImageDescription(image)" class="btn">SEND</div>
-        </div>
-
-        <div class="content-container">
-            <img [src]="image.url" alt="{{ image.fileName }}" style="width: 100%" />
-        </div>
-
-        <div class="content-container">
-            <p>Operations applied: {{ image.operations.join(', ') }}</p>
-            <p>Description: {{ image.description }}</p>
-        </div>
-    </div>
-</div>
-
+<!-- Display file contents -->
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container">
@@ -39,8 +17,29 @@
                 </ul>
             </div>
         </div>
+        <div class="content-container limited">
+            <div class="title">Correct Data:</div>
+            <pre>{{ correct }}</pre>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Incorrect Data:</div>
+            <pre>{{ incorrect }}</pre>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Verify Data:</div>
+            <pre>{{ verify }}</pre>
+        </div>
     </div>
+
     <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container limited">
+            <div class="title">AI Prompt:</div>
+            <pre>{{ aiPrompt }}</pre>
+        </div>
+        <div class="content-container">
+            <div class="title">Main Answer:</div>
+            <pre>{{ mainAnswer | json }}</pre>
+        </div>
         <div class="content-container">
             <div class="title">Response from Headquarters:</div>
             <div class="wrapped-text">{{ reportResponse | json }}</div>
@@ -48,6 +47,7 @@
     </div>
 </div>
 
+<!-- Run Lesson Button -->
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
