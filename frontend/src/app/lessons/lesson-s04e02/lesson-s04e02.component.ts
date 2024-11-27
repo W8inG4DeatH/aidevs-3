@@ -11,7 +11,7 @@ import { IOpenAIModel } from 'src/app/common-components/common-components.interf
 export class LessonS04E02Component implements OnInit {
     [key: string]: any;
 
-    public openAiModel: IOpenAIModel = IOpenAIModel.GPT4oMini;
+    public openAiModel: IOpenAIModel = IOpenAIModel.GPT4o;
     public apiKey: string = '5e03d528-a239-488a-83f8-13e443c02c85';
     public taskIdentifier: string = 'research';
 
@@ -27,9 +27,9 @@ export class LessonS04E02Component implements OnInit {
 
     public backendUrl = `${environment.apiUrl}/lessons/s04e02`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-    ngOnInit() {}
+    ngOnInit() { }
 
     async processLesson() {
         try {
@@ -53,27 +53,33 @@ export class LessonS04E02Component implements OnInit {
 
             // Step 2: Create prompt for OpenAI model
             this.aiPrompt = `
-You are analyzing research data. Each sample has a two-digit identifier at the beginning of the line, followed by four numbers separated by commas.
+Classify data according to examples.
 
-Based on the rules provided in the 'verify' dataset, identify which samples in the 'correct' and 'incorrect' datasets can be trusted.
+<examples>
+${this.correct
+                    .split('\n')
+                    .map((line) => `USER: ${line.trim()} AI: positive`)
+                    .join('\n')}
+${this.incorrect
+                    .split('\n')
+                    .map((line) => `USER: ${line.trim()} AI: negative`)
+                    .join('\n')}
+</examples>
 
-The 'verify' dataset specifies how to determine if a sample is correct or not:
+Here is a new dataset that needs to be classified. Each row starts with a two-digit identifier followed by four numbers:
+
+<new_data>
 ${this.verify}
+</new_data>
 
-Here are the samples to analyze:
+### Task:
+1. Analyze the new dataset based on the examples provided.
+2. If a sample is classified as "positive" (matching patterns of correct examples), return its two-digit identifier.
+3. If a sample is classified as "negative" (matching patterns of incorrect examples), ignore it.
+4. Return only the identifiers of the "positive" samples.
 
-Correct dataset:
-${this.correct}
-
-Incorrect dataset:
-${this.incorrect}
-
-Your task:
-1. Analyze the samples based on the 'verify' dataset.
-2. Return only the two-digit identifiers of the samples that can be trusted.
-
-### Output format:
-Return only the JSON array of trusted identifiers, with no explanations or additional text. Example format:
+### Output:
+Return the result as a JSON array of two-digit identifiers in the following format:
 
 [
   "01",
@@ -81,7 +87,7 @@ Return only the JSON array of trusted identifiers, with no explanations or addit
   "03"
 ]
 
-Return the result in this exact format.
+Do not include explanations or additional text. Return only the JSON array.
 `;
 
             console.log('AI Prompt:', this.aiPrompt);
@@ -101,23 +107,29 @@ Return the result in this exact format.
             this.processLogs.push('Received response from OpenAI model.');
 
             // Extract the result from the AI response
-            const rawContent = aiResponse.choices[0].message.content;
+            const rawContent = aiResponse.choices[0].message.content.trim();
             console.log('Raw Content:', rawContent);
 
-            // Use a regular expression to extract the JSON block
-            const jsonMatch = rawContent.match(/```json\s*([\s\S]*?)\s*```/);
-            if (jsonMatch && jsonMatch[1]) {
-                try {
-                    // Parsuj wyodrębniony blok JSON
-                    this.mainAnswer = JSON.parse(jsonMatch[1]); // Wyodrębniony JSON
-                    console.log('Parsed Main Answer:', this.mainAnswer);
-                    this.processLogs.push('Parsed response from OpenAI model.');
-                } catch (error) {
-                    console.error('Failed to parse JSON:', error);
-                    throw new Error('Invalid JSON format in extracted content.');
+            try {
+                let parsedJson: string[];
+
+                // Sprawdź, czy odpowiedź zawiera bloki kodu ```json ... ```
+                const jsonMatch = rawContent.match(/```json\s*([\s\S]*?)\s*```/);
+                if (jsonMatch && jsonMatch[1]) {
+                    // Wyodrębnij JSON z bloku kodu
+                    parsedJson = JSON.parse(jsonMatch[1].trim());
+                } else {
+                    // Spróbuj bezpośrednio sparsować jako JSON
+                    parsedJson = JSON.parse(rawContent);
                 }
-            } else {
-                throw new Error('Unable to extract JSON from AI response.');
+
+                // Przypisz wynik do mainAnswer
+                this.mainAnswer = parsedJson;
+                console.log('Parsed Main Answer:', this.mainAnswer);
+                this.processLogs.push('Parsed response from OpenAI model.');
+            } catch (error) {
+                console.error('Failed to parse JSON:', error);
+                throw new Error('Invalid JSON format in AI response.');
             }
 
             // Step 4: Send mainAnswer to Headquarters

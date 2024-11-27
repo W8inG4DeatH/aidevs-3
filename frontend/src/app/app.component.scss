@@ -55,6 +55,11 @@
         overflow-y: auto;
     }
 
+    &.limited-short {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
     &.limited-long {
         max-height: 600px;
         overflow-y: auto;
