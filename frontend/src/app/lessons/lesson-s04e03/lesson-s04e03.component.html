@@ -1,12 +1,13 @@
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
-            <div class="content-row-container full-width" fxLayout="column">Lesson s04e03</div>
+            <div class="content-row-container full-width" fxLayout="column">
+                Lesson s04e03
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Display file contents -->
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container">
@@ -14,28 +15,37 @@
             <div>
                 <ul>
                     <li *ngFor="let log of processLogs">{{ log }}</li>
+                    <li>{{ processStatus }}</li>
                 </ul>
             </div>
         </div>
-        <div class="content-container limited-short">
-            <div class="title">Correct Data:</div>
-            <pre>{{ correct }}</pre>
+        <div class="content-container limited">
+            <div class="title">Site URLs:</div>
+            <pre>{{ searchSiteUrls | json }}</pre>
         </div>
-        <div class="content-container limited-short">
-            <div class="title">Incorrect Data:</div>
-            <pre>{{ incorrect }}</pre>
-        </div>
-        <div class="content-container limited-short">
-            <div class="title">Verify Data:</div>
-            <pre>{{ verify }}</pre>
-        </div>
+
     </div>
 
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container limited">
+            <div class="title">Questions JSON:</div>
+            <pre>{{ questionsJson | json }}</pre>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Site Contents:</div>
+            <pre>{{ searchSiteContents | json }}</pre>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container limited">
             <div class="title">AI Prompt:</div>
             <pre>{{ aiPrompt }}</pre>
         </div>
+    </div>
+    <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container">
             <div class="title">Main Answer:</div>
             <pre>{{ mainAnswer | json }}</pre>
@@ -47,7 +57,7 @@
     </div>
 </div>
 
-<!-- Run Lesson Button -->
+<!-- Przycisk uruchamiający lekcję -->
 <div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
