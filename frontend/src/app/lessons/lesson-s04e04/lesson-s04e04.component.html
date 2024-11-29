@@ -1,0 +1,34 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">
+                Lesson s04e04
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container">
+            <div class="title">Main Call:</div>
+            <pre>{{ mainAnswer | json }}</pre>
+        </div>
+    </div>
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container">
+            <div class="title">Response from Headquarters:</div>
+            <div class="wrapped-text">{{ reportResponse | json }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
+                <div class="btn">Run Lesson s04e04</div>
+            </div>
+        </div>
+    </div>
+</div>
