@@ -1,0 +1,69 @@
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div class="content-row-container full-width" fxLayout="column">
+                Lesson s04e05
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container">
+            <div class="title">Process Logs:</div>
+            <div>
+                <ul>
+                    <li *ngFor="let log of processLogs">{{ log }}</li>
+                    <li>{{ processStatus }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Site URLs:</div>
+            <pre>{{ searchSiteUrls | json }}</pre>
+        </div>
+
+    </div>
+
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container limited">
+            <div class="title">Questions JSON:</div>
+            <pre>{{ questionsJson | json }}</pre>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Site Contents:</div>
+            <pre>{{ searchSiteContents | json }}</pre>
+        </div>
+    </div>
+</div>
+
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container limited">
+            <div class="title">AI Prompt:</div>
+            <pre>{{ aiPrompt }}</pre>
+        </div>
+    </div>
+    <div class="section-container" fxLayout="column" fxFlex="50">
+        <div class="content-container">
+            <div class="title">Main Answer:</div>
+            <pre>{{ mainAnswer | json }}</pre>
+        </div>
+        <div class="content-container">
+            <div class="title">Response from Headquarters:</div>
+            <div class="wrapped-text">{{ reportResponse | json }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Przycisk uruchamiający lekcję -->
+<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
+    <div class="section-container" fxLayout="column" fxFlex>
+        <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
+            <div (click)="processLesson()" class="full-width" fxLayout="row" fxLayoutAlign="center">
+                <div class="btn">Run Lesson s04e05</div>
+            </div>
+        </div>
+    </div>
+</div>
