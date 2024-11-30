@@ -2,7 +2,7 @@
     <div class="section-container" fxLayout="column" fxFlex>
         <div class="content-container" fxLayout="column" fxLayoutAlign="start start">
             <div class="content-row-container full-width" fxLayout="column">
-                Lesson s04e05
+                Lesson s04e05 - Analiza notatnika Rafała
             </div>
         </div>
     </div>
@@ -20,32 +20,24 @@
             </div>
         </div>
         <div class="content-container limited">
-            <div class="title">Site URLs:</div>
-            <pre>{{ searchSiteUrls | json }}</pre>
-        </div>
-
-    </div>
-
-    <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container limited">
             <div class="title">Questions JSON:</div>
             <pre>{{ questionsJson | json }}</pre>
         </div>
         <div class="content-container limited">
-            <div class="title">Site Contents:</div>
-            <pre>{{ searchSiteContents | json }}</pre>
+            <div class="title">PDF Content:</div>
+            <pre>{{ pdfContent }}</pre>
+        </div>
+        <div class="content-container limited">
+            <div class="title">Image Descriptions:</div>
+            <pre>{{ pdfImageDescriptions | json }}</pre>
         </div>
     </div>
-</div>
 
-<div class="content-container gray" fxLayout="row full-width" fxLayoutAlign="start">
     <div class="section-container" fxLayout="column" fxFlex="50">
-        <div class="content-container limited">
+        <div class="content-container limited-long">
             <div class="title">AI Prompt:</div>
             <pre>{{ aiPrompt }}</pre>
         </div>
-    </div>
-    <div class="section-container" fxLayout="column" fxFlex="50">
         <div class="content-container">
             <div class="title">Main Answer:</div>
             <pre>{{ mainAnswer | json }}</pre>

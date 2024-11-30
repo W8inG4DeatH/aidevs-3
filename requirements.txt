@@ -7,3 +7,6 @@ requests
 moviepy
 ffmpeg
 pydub
+PyPDF2
+pytesseract
+Pillow
