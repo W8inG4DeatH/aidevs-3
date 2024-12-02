@@ -106,6 +106,10 @@ export class MainMenuComponent implements OnInit {
                 RouterLink: '/lessons/lesson-s04e05',
             },
             {
+                DisplayName: 'Lesson s05e01',
+                RouterLink: '/lessons/lesson-s05e01',
+            },
+            {
                 DisplayName: 'OpenAI Agent',
                 RouterLink: '/ai-agents/openai-agent',
             },
